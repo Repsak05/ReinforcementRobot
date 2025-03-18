@@ -3,7 +3,7 @@ import sys
 import glob
 import time
 
-COM = "COM9"
+COM = "COM5"
 BAUD = 115200
 s = serial.Serial(COM, BAUD, timeout=1)
 
@@ -20,6 +20,7 @@ def readSerial():
     
 	return distance
    
+
 while(1):
 	angle = int(input())
 	writeToArduino(angle)
