@@ -1,9 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://bmxpigux2yf2t"]
+[gd_scene load_steps=16 format=3 uid="uid://bmxpigux2yf2t"]
 
 [ext_resource type="Script" uid="uid://cfwumjrirhsep" path="res://platform.gd" id="1_ig7tw"]
 [ext_resource type="Texture2D" uid="uid://c7e4tcdgyl3wp" path="res://assets/images/sky.jpg" id="2_0xm2m"]
 [ext_resource type="Script" uid="uid://duerrt6i25it1" path="res://logic_ai.gd" id="2_1bvp3"]
 [ext_resource type="Script" uid="uid://da7c7abxnefhb" path="res://ball.gd" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://18mtq2u3okju" path="res://set_point.gd" id="5_lquwl"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_h2yge"]
 panorama = ExtResource("2_0xm2m")
@@ -27,12 +28,19 @@ albedo_color = Color(0, 0.435294, 1, 1)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_0xm2m"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1bvp3"]
+albedo_color = Color(1, 0.0666667, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lquwl"]
+material = SubResource("StandardMaterial3D_1bvp3")
+
 [node name="main" type="Node"]
 
 [node name="cameras" type="Node" parent="."]
 
 [node name="Camera3D" type="Camera3D" parent="cameras"]
 transform = Transform3D(1, 0, 0, 0, 0.951186, 0.308619, 0, -0.308619, 0.951186, 0, 2.366, 4.925)
+fov = 115.0
 
 [node name="environment" type="Node" parent="."]
 
@@ -49,7 +57,7 @@ script = ExtResource("2_1bvp3")
 [node name="Bodys" type="Node" parent="LogicAI"]
 
 [node name="platform" type="StaticBody3D" parent="LogicAI/Bodys"]
-transform = Transform3D(7.34811, 0, 0, 0, 0.174225, 0, 0, 0, 4.52341, 0, -0.494275, 0)
+transform = Transform3D(21.2999, 0, 0, 0, 0.173379, 0, 0, 0, 4.50144, 0, -0.494275, 0)
 script = ExtResource("1_ig7tw")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LogicAI/Bodys/platform"]
@@ -60,6 +68,7 @@ shape = SubResource("BoxShape3D_ig7tw")
 
 [node name="ball" type="RigidBody3D" parent="LogicAI/Bodys"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.82525, 0)
+mass = 5.0
 script = ExtResource("3_h2yge")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LogicAI/Bodys/ball"]
@@ -68,3 +77,10 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ig7tw")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LogicAI/Bodys/ball"]
 shape = SubResource("SphereShape3D_0xm2m")
+
+[node name="setPoint" type="Node3D" parent="LogicAI"]
+script = ExtResource("5_lquwl")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LogicAI/setPoint"]
+transform = Transform3D(0.505, 0, 0, 0, 0.505, 0, 0, 0, 0.505, 0, 1.98396, 0)
+mesh = SubResource("SphereMesh_lquwl")
