@@ -7,31 +7,46 @@ float distance = 0;
 
 Servo myservo;
 
-int angle;
+int angle = 90;
 
 void setup() {
   myservo.attach(9);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(trans_pin,OUTPUT); //transmit is ouput
   pinMode(recv_pin,INPUT); //receive is input
 }
 
 void loop() {
 
-  distance = calcDist(distance, 0.34);
+  Serial.println(angle);
 
-  angle = 90-(distance-0.14)*300;
+  distance = calcDist(distance, 0.34);
+  Serial.println(distance - 0.17);
+
+  // angle = 90-(distance-0.14)*200;
+  // int action = readInputInt()
+  // angle += action*5;
 
 
 
   // Serial.println(angle);
-  myservo.write(angle);
+  // myservo.write(angle);
 
-  Serial.print(distance);
-  Serial.println("m");
+  // delay(100); // can alter based on needs of application
 
-  delay(100); // can alter based on needs of application
+  // distance = calcDist(distance, 0.34);
+  // Serial.print(distance);
+  // Serial.println("m");
+}
+
+int readInputInt() {
+  int c;
+  do {
+    c = Serial.parseInt();
+  } while (c < 0);
+
+  return c;
 }
 
 float calcDist(float oldDist, float maxDist) {
@@ -63,8 +78,4 @@ float calcDist(float oldDist, float maxDist) {
 
 
   return distRaw;
-}
-
-void setAngle(float angle) {
-  myservo.write(angle);
 }
