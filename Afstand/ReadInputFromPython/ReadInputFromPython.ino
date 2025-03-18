@@ -7,7 +7,7 @@ const int recv_pin = 11; //Echo
 const unsigned long baudRate = 115200;
 
 const float CENTER_DISTANCE = 0.14;
-float distance = 12;
+float distance = 0.14;
 
 Servo myservo;
 
