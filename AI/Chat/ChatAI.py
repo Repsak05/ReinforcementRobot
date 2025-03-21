@@ -8,9 +8,9 @@ import time
 alpha = 0.05  # Lower learning rate for more stable learning
 gamma = 0.95  # Higher discount factor to value future rewards more
 epsilon = 1.0  # Start with full exploration
-epsilon_decay = 0.999  # Gradually reduce exploration
+epsilon_decay = 0.99  # Gradually reduce exploration
 min_epsilon = 0.01  # Minimum exploration threshold
-num_episodes = 1
+num_episodes = 100
 
 # Initialize Q-table
 Q = {}
@@ -28,7 +28,7 @@ def readSerial():
 	distance = 0
 	if(s.is_open):
 		distance = s.readline().decode().strip()
-		print(distance)
+		# print(distance)
 	if distance == '':
 		return 0.26
 
@@ -38,15 +38,21 @@ def readSerial():
 class BalancingEnv:
     def __init__(self):
         self.angle = 0  # Initial plate angle
-        self.position = 0.25  # Cylinder's initial position (distance from one side)
+        self.position = readSerial()  # Cylinder's initial position (distance from one side)
         self.dt = 0.1  # Time step
         self.max_angle = 30  # Maximum tilt angle in degrees
-        self.max_position = 0.26  # Maximum cylinder position
+        self.max_position = 230  # Maximum cylinder position
+        self.min_position = 45
         self.steps = 0
+        self.failures = 0
+        self.centrum = 142
     
     def reset(self):
+        self.failures = 0
         self.angle = 0
-        self.position = random.uniform(-5, 5)
+        writeToArduino(90)
+        self.position = readSerial()
+        time.sleep(0.5)
         return self.get_state()
     
     def get_state(self):
@@ -54,7 +60,7 @@ class BalancingEnv:
     
     def step(self, action):
         # Convert action into an angle change (-1, 0, 1 degrees)
-        self.angle += action*10
+        self.angle += action*5
         self.angle = max(-self.max_angle, min(self.max_angle, self.angle))
         writeToArduino(90+self.angle)
         
@@ -63,14 +69,27 @@ class BalancingEnv:
         time.sleep(0.1)
         self.position = readSerial()
 
-        
+        global done
+        failure = False
         # Check if the cylinder is out of bounds
-        done = self.position > self.max_position or self.position <= 0.01
-        reward = -10 if done else 1 - (5 * abs(0.14 - self.position))  # Give higher penalty for falling off
-        global epsilon
-        if self.steps%500 == 0:
-             epsilon *= 0.8
-             print("epsilon:", epsilon)
+        if self.position > self.max_position or self.position <= self.min_position:
+            failure = True
+            print("FAIL")
+            self.failures += 1
+        if self.failures >= 20:
+            done = True
+        # done = self.position > self.max_position or self.position <= 40
+        # done = False
+        reward = 0 if failure else pow(self.centrum - abs(self.centrum - self.position),2)  # Give higher penalty for falling off
+        if self.position > self.max_position & action > 0:
+             reward += 1
+        if self.position < self.min_position & action < 0:
+             reward += 1
+        print(reward)
+        # global epsilon
+        # if self.steps%500 == 0:
+        #      epsilon *= 0.8
+        #      print("epsilon:", epsilon)
 
         if self.steps == 49:
              print(Q)
@@ -96,6 +115,12 @@ env = BalancingEnv()
 
 epsilon_values = []
 for episode in range(num_episodes):
+    # print("Start new episode? (y/n)\n")
+    # wait = input()
+    # if wait == "n":
+    #      break
+
+    print("Episode:", episode)
     state = env.reset()
     done = False
     total_reward = 0
@@ -113,7 +138,7 @@ for episode in range(num_episodes):
         state = next_state
         if env.steps == 50:
             break
-    
+
     rewards_per_episode.append(total_reward)
     epsilon = max(min_epsilon, epsilon * epsilon_decay)  # Decay epsilon
     epsilon_values.append(epsilon)
