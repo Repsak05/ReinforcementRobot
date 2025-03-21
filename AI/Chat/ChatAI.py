@@ -10,7 +10,7 @@ gamma = 0.95  # Higher discount factor to value future rewards more
 epsilon = 1.0  # Start with full exploration
 epsilon_decay = 0.99  # Gradually reduce exploration
 min_epsilon = 0.01  # Minimum exploration threshold
-num_episodes = 100
+num_episodes = 1
 
 # Initialize Q-table
 Q = {}
@@ -41,11 +41,11 @@ class BalancingEnv:
         self.position = readSerial()  # Cylinder's initial position (distance from one side)
         self.dt = 0.1  # Time step
         self.max_angle = 30  # Maximum tilt angle in degrees
-        self.max_position = 230  # Maximum cylinder position
+        self.max_position = 235  # Maximum cylinder position
         self.min_position = 45
         self.steps = 0
         self.failures = 0
-        self.centrum = 142
+        self.centrum = 140
     
     def reset(self):
         self.failures = 0
@@ -72,7 +72,7 @@ class BalancingEnv:
         global done
         failure = False
         # Check if the cylinder is out of bounds
-        if self.position > self.max_position or self.position <= self.min_position:
+        if self.position >= self.max_position or self.position <= self.min_position:
             failure = True
             print("FAIL")
             self.failures += 1
@@ -81,18 +81,16 @@ class BalancingEnv:
         # done = self.position > self.max_position or self.position <= 40
         # done = False
         reward = 0 if failure else pow(self.centrum - abs(self.centrum - self.position),2)  # Give higher penalty for falling off
-        if self.position > self.max_position & action > 0:
-             reward += 1
-        if self.position < self.min_position & action < 0:
-             reward += 1
-        print(reward)
+        
+        if self.position >= self.max_position and action > 0:
+             reward += 1000
+        if self.position <= self.min_position and action < 0:
+             reward += 1000
+        print(reward, "       ", action)
         # global epsilon
         # if self.steps%500 == 0:
         #      epsilon *= 0.8
         #      print("epsilon:", epsilon)
-
-        if self.steps == 49:
-             print(Q)
 
         if done: print("Done:",self.position)
         # else: print("Dist:",self.position)
@@ -144,6 +142,7 @@ for episode in range(num_episodes):
     epsilon_values.append(epsilon)
 
 print("Training complete!")
+print(Q)
 
 # Plot training results
 fig, axs = plt.subplots(2, 1, figsize=(10, 8))
