@@ -6,6 +6,6 @@ extends Node
 
 func _process(delta):
 	
-	platform.rotation = Vector3(0, 0,5 * pow(ball.transform.origin.x - setPoint.transform.origin.x, 3)) * delta
+	platform.rotation = Vector3(0, 0,5 * pow(ball.transform.origin.x - setPoint.transform.origin.x, 3) + ball.transform.origin.x - setPoint.transform.origin.x) * delta
 	
 	pass
