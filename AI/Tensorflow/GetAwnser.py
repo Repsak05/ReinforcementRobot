@@ -1,32 +1,26 @@
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-import numpy as np
+import gym
+import keras
+# from keras.models import Model
+# from keras.callbacks import TensorBoard
+# from keras.layers import Input, Dense, Activation, Reshape
+# from keras.optimizers import Adam
+# from rl.memory import SequentialMemory
+# from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
+# from rl.agents.dqn import DQNAgent
 
-# Define the AI model
-def create_model():
-    model = keras.Sequential([
-        layers.Dense(16, activation='relu', input_shape=(2,)),
-        layers.Dense(16, activation='relu'),
-        layers.Dense(1, activation='tanh')  # Output change in angle (-1 to 1 scaled)
-    ])
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.01), loss='mse')
-    return model
+env = gym.make('CartPole-v1')
+env._max_episode_steps = 500  # Correct attribute name
+num_actions = env.action_space.n
 
-# Create the model
-model = create_model()
+# Creating a simple NN model
+observation = keras.layers.Input(shape=(1,) + env.observation_space.shape)
+x = keras.layers.Dense(16, activation='relu')(observation)
+x = keras.layers.Dense(16, activation='relu')(x)
+x = keras.layers.Dense(16, activation='relu')(x)
+output = keras.layers.Dense(num_actions, activation='linear')(x) 
+output = keras.layers.Reshape((num_actions,))(output)
 
-# Example function to predict action
-def get_action(distance_from_center, current_angle):
-    input_data = np.array([[distance_from_center, current_angle]])
-    delta_angle = model.predict(input_data, verbose=0)[0, 0]
-    print("Change in angle:", delta_angle)
-    return delta_angle
+model = keras.models.Model(inputs=observation, outputs=output)
+print(model.summary())
 
-# Example usage
-if __name__ == "__main__":
-    # Example inputs
-    distance_from_center = 0.5  # Change this dynamically in real environment
-    current_angle = 0.1  # Change this dynamically in real environment
-    
-    get_action(distance_from_center, current_angle)
+
