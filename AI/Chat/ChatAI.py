@@ -76,8 +76,6 @@ class BalancingEnv:
                 
         return reward
                 
-            
-    
     def step(self, action):
         # Convert action into an angle change (-1, 0, 1 degrees)
         self.angle += action * 10
