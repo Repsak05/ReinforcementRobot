@@ -43,7 +43,7 @@ void loop() {
   if(Serial.available()){
     // Read and write angle to servo
     rx = Serial.read(); //Read raw byte value - Should be directly parseable as integer (0-180) ... technically uint8_t (char) but well within bounds for a regular signed int.
-    myservo.write(rx);
+    if(rx >= 60 && rx <= 120) myservo.write(rx);
   
     //Calculate and send distance
     Serial.println(dist);
