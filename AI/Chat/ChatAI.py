@@ -3,22 +3,23 @@ import random
 import matplotlib.pyplot as plt
 import serial
 import time
-
+import csv
+import json 
 
 
 # Q-learning parameters
 alpha = 0.05  # Lower learning rate for more stable learning
 gamma = 0.95  # Higher discount factor to value future rewards more
 epsilon = 1.0  # Start with full exploration
-epsilon_decay = 0.97  # Gradually reduce exploration
+epsilon_decay = 0.99  # Gradually reduce exploration
 min_epsilon = 0.01  # Minimum exploration threshold
-num_episodes = 50
+num_episodes = 150
 
 # Initialize Q-table
 Q = {}
 rewards_per_episode = []
 
-COM = "COM9"
+COM = "COM5"
 BAUD = 115200
 s = serial.Serial(COM, BAUD, timeout=1)
 
@@ -62,23 +63,34 @@ class BalancingEnv:
         return self.get_state()
     
     def get_state(self):
-        return (round(self.angle), round(self.position / 5000) * 5000)
+        return (round(self.angle), round(self.position / 20) * 20)
     
-    def getReward(self):
+    def getReward(self, action):
         currentTime = current_milli_time()
         reward = 0
-        while(current_milli_time() < currentTime + 1000):
+        while(current_milli_time() < currentTime + 300):
+            # print(self.position)
             writeToArduino(90 + self.angle)
-            self.position = readSerial()
+            self.position = readSerial() 
             
             if not failure and self.position >= 40 and self.position <= 230:
-                reward += pow(self.centrum - (abs(self.centrum - self.position)), 2)
+                reward += pow(self.centrum - (abs(self.centrum - self.position)), 1)
+            
+            if self.position >= self.max_position and action > 0:
+                reward += 1000
+            if self.position <= self.min_position and action < 0:
+                reward += 1000
+            
+            if self.position >= self.max_position and action < 0:
+                reward -= 1000
+            if self.position <= self.min_position and action > 0:
+                reward -= 1000
                 
         return reward
                 
     def step(self, action):
         # Convert action into an angle change (-1, 0, 1 degrees)
-        self.angle += action * 10
+        self.angle += action * 5
         self.angle = max(-self.max_angle, min(self.max_angle, self.angle)) #? Should it not be self.min_angle?
         writeToArduino(90 + self.angle)
         
@@ -101,17 +113,14 @@ class BalancingEnv:
         #     done = True
         # done = self.position > self.max_position or self.position <= 40
         # done = False
-        reward = self.getReward()
+        reward = self.getReward(action)
         # if not failure:
         #     reward = pow(self.centrum - (abs(self.centrum - self.position) + 30), 2)
         
         # reward = 0 if failure else pow(self.centrum - abs(self.centrum - self.position),2)  # Give higher penalty for falling off
         
         
-        # if self.position >= self.max_position and action > 0:
-        #      reward += 1000
-        # if self.position <= self.min_position and action < 0:
-        #      reward += 1000
+
         print(f"Reward {reward} :    action: {action}")
         # global epsilon
         # if self.steps%500 == 0:
@@ -173,9 +182,37 @@ for episode in range(num_episodes):
 print("Training complete!")
 print(Q)
 
+
+
+data = []
+for key in Q:
+    data.append([key[0],key[1],np.argmax(Q[key]) - 1])
+    # newDict[key] = np.argmax(Q[key]) - 1
+
+print(data)
+csv_filename = "test1.csv"
+fieldnames = ["Angle", "Distance", "Action"]
+
+with open(csv_filename, 'w', newline='') as f:
+     
+    # using csv.writer method from CSV package
+    write = csv.writer(f)
+     
+    write.writerow(fieldnames)
+    write.writerows(data)
+
+
 # Plot training results
+
+window = 5
+
+average_data = []
+for ind in range(len(rewards_per_episode)):
+    average_data.append(np.mean(rewards_per_episode[0:ind]))
+
 fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 axs[0].plot(rewards_per_episode)
+axs[0].plot(average_data)
 axs[0].set_xlabel('Episode')
 axs[0].set_ylabel('Total Reward')
 axs[0].set_title('Q-learning Training Progress')
@@ -187,4 +224,12 @@ axs[1].set_title('Epsilon Decay Over Time')
 
 plt.tight_layout()
 plt.show()
+print("\n\n\n\n")
 
+newQ = {}
+for key in Q:
+     newQ[str(key)] = str(Q[key])
+
+with open("Agent.json", "w") as outfile: 
+    Kasper = json.dumps(newQ)
+    outfile.write(Kasper)
