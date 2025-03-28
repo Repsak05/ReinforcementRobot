@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import copy
 
 class NeuralNetwork:
     def randInit(self, inputSize, outputSize, hiddenLayerSize, amountHidLayers):
@@ -11,9 +12,22 @@ class NeuralNetwork:
         self.biases.append(np.zeros((outputSize,1)))
         self.layers.append(np.random.uniform(-0.5, 0.5, (outputSize, hiddenLayerSize)))
 
-    def init(self, layers, biases):
-        self.layers = layers
-        self.biases = biases
+    def init(self, layers, biases, randThreshold, randChange):
+        self.layers = copy.deepcopy(layers)
+        self.biases = copy.deepcopy(biases)
+        for iLayer in range(len(layers)):
+            layer = layers[iLayer]
+            
+            for ix in range(len(layer)):
+                x = layer[ix]
+                
+                for iweight in range(len(x)):
+                    weight = x[iweight]     
+                         
+                    if(np.random.uniform(0, 1) < randThreshold):
+                        n = np.random.uniform(1 - randChange, 1 + randChange)
+                        
+                        self.layers[iLayer][ix][iweight] = weight * n
 
     def calcOutput(self, input):
         curValues = input
@@ -24,8 +38,14 @@ class NeuralNetwork:
         return curValues
         
 
-test = NeuralNetwork()
-test.randInit(2, 3, 20, 1)
+# test = NeuralNetwork()
+# test.randInit(2, 3, 20, 1)
+
+# new = NeuralNetwork()
+# new.init(test.layers, test.biases, 0.5, 0.5)
+
+# print(test.layers[1][0])
+# print(new.layers[1][0])
 
 # print(test.biases)
 
