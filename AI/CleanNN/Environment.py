@@ -2,6 +2,7 @@ import pymunk
 import pygame
 import pymunk.pygame_util
 import math
+import numpy as np
 
 class Environment:
     
@@ -24,8 +25,16 @@ class Environment:
         self.space = pymunk.Space()
         self.space.gravity = (0, 981)
 
-        self.ball = self.addBall(12, 30, (340, 450), False)
+        # xStart = np.random.uniform(340, 460)
+        startPos = (460, 450)
+
+        self.ball = self.addBall(12, 30, startPos, False)
         # self.hej = self.addBall(12, 30, (400, 450), True)
+
+        startDist = self.realDistanceToCenter(startPos[0],startPos[1], self.center[0], self.center[1])
+        
+        self.steps = np.array([[math.pi],[startDist],[math.pi],[startDist],[math.pi],[startDist]])
+
 
         self.plane = self.createRotatingUBox(self.center, 200, 200, 10)
         self.plane.angle = math.pi
@@ -36,9 +45,7 @@ class Environment:
             self.clock = pygame.time.Clock()
 
             self.drawOptions = pymunk.pygame_util.DrawOptions(self.window)
-        
-        
-   
+
     def run(self, action):
         
         # self.tiltCheck()
@@ -107,11 +114,21 @@ class Environment:
         self.space.add(body, floor_shape, left_shape, right_shape)
         return body
     
-    def realDistanceToCenter(self):
-        distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - self.center[1]), 2))
+    def normalizeDist(self, value):
+        return (value - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION)
+        
+    def realDistanceToCenter(self, ballX, ballY, floorX, floorY):
+        distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
+        nDist = self.normalizeDist(distance)
+        
+        if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
+        return nDist
+    
+    # def realDistanceToCenter(self):
+    #     distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - self.center[1]), 2))
 
-        normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
-        return normalDist
+    #     normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
+    #     return normalDist
 
 
     def stop(self):

@@ -7,7 +7,7 @@ class NeuralNetwork:
         self.layers = [np.random.uniform(-0.5, 0.5, (hiddenLayerSize, inputSize))]
         self.biases = [np.zeros((hiddenLayerSize, 1))]
         
-        for i in range(amountHidLayers):
+        for _ in range(amountHidLayers):
             self.layers.append(np.random.uniform(-0.5, 0.5, (hiddenLayerSize,hiddenLayerSize)))
             self.biases.append(np.zeros((hiddenLayerSize,1)))
             

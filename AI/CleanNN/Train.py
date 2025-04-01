@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-
+import time
 
 from NeuralNetwork import NeuralNetwork
 from Environment import Environment
@@ -56,7 +56,7 @@ def initialize():
         results.append([])
         
         network = NeuralNetwork()
-        network.randInit(2, 3, 20, 1)
+        network.randInit(6, 3, 20, 1)
         neuralNetworks.append(network)
     
         
@@ -88,7 +88,7 @@ def addNetworks(amount):
     for i, agent in enumerate(neuralNetworks):
         for j in range(amount):
             newNet = NeuralNetwork()
-            newNet.init(agent.layers, agent.biases, 0.5, 1) #Change apropriately
+            newNet.init(agent.layers, agent.biases, 0.1, 1) #Change apropriately
             neuralNetworks.append(newNet)
             # results.append(MAX_POSITION) #Initialize position
             results.append([])
@@ -115,32 +115,57 @@ def run(steps, totalIterations = 0, thisIteration = 0):
     global environments
     global neuralNetworks
     global results
-    
+    global TimeCheck
+
     for _ in range(steps):
         for i in range(AMOUNT_OF_ENVIRONMENTS):
             env = environments[i]
+
+            env.steps[4][0] = env.steps[2][0]
+            env.steps[5][0] = env.steps[3][0]
+
+            env.steps[2][0] = env.steps[0][0]
+            env.steps[3][0] = env.steps[1][0]
+
+            # env.steps[2][0] = angle
+            # env.steps[3][0] = dist
             
             # calc dist, dir, angle, newAngle etc.
             dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
             angle = normalizeAngle(env.plane.angle)
+
+            env.steps[0][0] = angle
+            env.steps[1][0] = dist
             
-            possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
+            # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
+            possibleMoves = neuralNetworks[i].calcOutput(env.steps)
+
+            
+
             dir =  np.argmax(possibleMoves) - 1
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
             #Insert distance
-            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): env.runDraw(action) #Draw 
+            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
+                if (TimeCheck): 
+                    print("Time:",time.time() - startTime)
+                    TimeCheck = False
+                env.runDraw(action) #Draw 
+
             # if(): env.runDraw(action)
             else: env.run(action)
-            
+            # env.runDraw(action)
             results[i].append(dist)
     
 
-STEPS = 10
+STEPS = 30
 INTERATIONS = 100
+TimeCheck = True
 
 initialize()
 bestResults = []
+
+startTime = time.time()
 
 for i in range(INTERATIONS):
     run(STEPS, INTERATIONS, i + 1)
@@ -163,7 +188,9 @@ for i in range(INTERATIONS):
     
     errorHandler()
     
-    
+for env in environments:
+    env.stop()
+
 #Draw score
 # indexBest = np.argmin(meanRes)
 
