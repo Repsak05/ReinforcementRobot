@@ -9,7 +9,7 @@ from Environment import Environment
 MAX_POSITION = 90
 MIN_POSITION = 0
 
-ANGLE_SPEED = 0.01
+ANGLE_SPEED = 0.05
 MIN_ANGLE = math.pi - math.pi / 18
 MAX_ANGLE = math.pi + math.pi / 18
 
@@ -52,7 +52,8 @@ def initialize():
         env.init(DRAW_ENV)
         environments.append(env)
         
-        results.append(MAX_POSITION)
+        # results.append(MAX_POSITION)
+        results.append([])
         
         network = NeuralNetwork()
         network.randInit(2, 3, 20, 1)
@@ -63,10 +64,15 @@ def removeNetworks(amount):
     global environments
     global neuralNetworks
     global results
+
+    meanRes = []
+    for res in results:
+        meanRes.append(np.mean(res))
     
     for _ in range(amount):
-        index = np.argmax(results)
+        index = np.argmax(meanRes)
         
+        meanRes.pop(index)
         results.pop(index)
         environments.pop(index)
         neuralNetworks.pop(index)
@@ -84,7 +90,8 @@ def addNetworks(amount):
             newNet = NeuralNetwork()
             newNet.init(agent.layers, agent.biases, 0.5, 1) #Change apropriately
             neuralNetworks.append(newNet)
-            results.append(MAX_POSITION) #Initialize position
+            # results.append(MAX_POSITION) #Initialize position
+            results.append([])
         
         if i == startLen - 1:
             break
@@ -104,7 +111,7 @@ def errorHandler(): #Print any errors which made cause an the program to malfunc
     # if (AMOUNT_OF_ENVIRONMENTS - int(AMOUNT_OF_ENVIRONMENTS / REMOVE_BOTTOM) * REMOVE_TOP) * REMOVE_TOP != AMOUNT_OF_ENVIRONMENTS: print("ISSUE")
     if REMOVE_TOP >= REMOVE_BOTTOM: print(f"REMOVE_TOP {REMOVE_TOP} must be smaller than REMOVE_BOTTOM {REMOVE_BOTTOM}")
 
-def run(steps):
+def run(steps, totalIterations = 0, thisIteration = 0):
     global environments
     global neuralNetworks
     global results
@@ -122,26 +129,34 @@ def run(steps):
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
             #Insert distance
-            if(i == 0): env.runDraw(action)
+            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): env.runDraw(action) #Draw 
+            # if(): env.runDraw(action)
             else: env.run(action)
             
-            results[i] = dist
+            results[i].append(dist)
     
 
-STEPS = 20
-INTERATIONS = 10
+STEPS = 10
+INTERATIONS = 100
 
 initialize()
 bestResults = []
 
 for i in range(INTERATIONS):
-    run(STEPS)
-    STEPS += 5
-    if(i < 10): print(f"Iteration: 0{i}, score: {min(results)}")
-    else: print(f"Iteration: {i}, score: {min(results)}")
+    run(STEPS, INTERATIONS, i + 1)
+    STEPS += 4
+    
+    # Calc best result
+    meanRes = []
+    for res in results:
+        meanRes.append(np.mean(res))
+        
+    # Print res
+    if(i < 10): print(f"Iteration: 0{i}, score: {min(meanRes)}")
+    else: print(f"Iteration: {i}, score: {min(meanRes)}")
 
     if i == INTERATIONS - 1: break
-    bestResults.append(min(results))
+    bestResults.append(min(meanRes))
     removeNetworks(int(AMOUNT_OF_ENVIRONMENTS / REMOVE_BOTTOM) * REMOVE_TOP)
     addNetworks(REMOVE_TOP)
     
@@ -150,7 +165,7 @@ for i in range(INTERATIONS):
     
     
 #Draw score
-indexBest = np.argmin(results)
+# indexBest = np.argmin(meanRes)
 
 xbestResults = np.arange(len(bestResults))
 plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
