@@ -16,7 +16,7 @@ class Environment:
 
         self.run_flag = True
         # self.fps = 60
-        self.dt = 0.3
+        self.dt = 1/10
 
         self.space = pymunk.Space()
         self.space.gravity = (0, 981)
@@ -42,7 +42,10 @@ class Environment:
 
 
     def run(self, dAngle):
-        if dAngle: self.box.angle += dAngle
+        # if dAngle: self.box.angle += dAngle * self.angleSpeed
+        # print()
+        self.box.angle += dAngle
+        # print(self.box.angle)
         
         tilt_offset = self.box.angle - math.pi  # deviation from the "neutral" angle
         if abs(tilt_offset) < self.static_threshold:
@@ -143,9 +146,9 @@ class Environment:
             space.add(body, shape)
             
             
-AMOUNT_OF_ENVIRONMENTS = 2
-environments = []
-neuralNetworks = []
+# AMOUNT_OF_ENVIRONMENTS = 2
+# environments = []
+# neuralNetworks = []
 
 
 # for i in range(AMOUNT_OF_ENVIRONMENTS):

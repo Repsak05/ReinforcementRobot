@@ -16,7 +16,7 @@ class NeuralNetwork:
         self.layers = copy.deepcopy(layers)
         self.biases = copy.deepcopy(biases)
         for iLayer in range(len(layers)):
-            layer = layers[iLayer]
+            layer = self.layers[iLayer]
             
             for ix in range(len(layer)):
                 x = layer[ix]
@@ -37,9 +37,23 @@ class NeuralNetwork:
             curValues = 1 / (1 + np.exp(-preValues))
         return curValues
         
+# inputSize = 785
+# test = NeuralNetwork()
+# test.randInit(inputSize, 10, 20, 1)
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+
+# print(test.calcOutput(np.matrix([[0.8],[0.8]])))
 
 # test = NeuralNetwork()
-# test.randInit(2, 3, 20, 1)
+# test.randInit(784, 10, 20, 1)
+
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (784, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (784, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (784, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (784, 1)))))
 
 # new = NeuralNetwork()
 # new.init(test.layers, test.biases, 0.5, 0.5)
