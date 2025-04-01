@@ -15,8 +15,8 @@ class Environment:
         self.HEIGHT = 600
 
         self.run_flag = True
-        # self.fps = 60
-        self.dt = 1/10
+        self.fps = 20
+        self.dt = 1 / self.fps
 
         self.space = pymunk.Space()
         self.space.gravity = (0, 981)
@@ -24,7 +24,7 @@ class Environment:
         self.W = 200    # width of the U-box
         self.H = 200    # height of the side walls
         self.t = 10     # wall thickness
-        self.box = self.createRotatingUBox(self.space, (400, 400), self.W, self.H, wall_thickness=self.t)
+        self.box = self.createRotatingUBox(self.space, (400, 465), self.W, self.H, wall_thickness=self.t)
         self.ball_radius = 12
         self.ball = self.addBall(self.space, self.ball_radius, 30)
         
@@ -34,7 +34,7 @@ class Environment:
         self.gap = 168
         self.box.angle = math.pi
         self.angleSpeed = 0.003
-        self.static_threshold = 0.122  #(about 7 degrees)
+        self.static_threshold = 0 # 0.122  #(about 7 degrees)
 
         # Pre-calculate the local coordinate for the bottom point of the left wall.
         self.offset_y = self.calcCentroid()
@@ -44,7 +44,9 @@ class Environment:
     def run(self, dAngle):
         # if dAngle: self.box.angle += dAngle * self.angleSpeed
         # print()
-        self.box.angle += dAngle
+        self.box.angle = min(self.box.angle + dAngle, (math.pi) + (math.pi / 18))
+        self.box.angle = max(self.box.angle + dAngle, (math.pi) - (math.pi / 18))
+        # self.box.angle += dAngle
         # print(self.box.angle)
         
         tilt_offset = self.box.angle - math.pi  # deviation from the "neutral" angle
@@ -89,7 +91,7 @@ class Environment:
         t = wall_thickness
 
         y_centroid = self.calcCentroid()
-        offset_y = y_centroid
+        offset_y = 0
 
         # U shaped egdes
         floor_verts = [(-W/2, -t), (W/2, -t), (W/2, 0), (-W/2, 0)]
@@ -121,7 +123,7 @@ class Environment:
 
     def addBall(self, space, radius, mass):
         body = pymunk.Body()
-        body.position = (320, 450)
+        body.position = (370, 450)
         shape = pymunk.Circle(body, radius)
         shape.mass = mass
         shape.elasticity = 0.1

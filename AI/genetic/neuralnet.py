@@ -15,6 +15,10 @@ class NeuralNetwork:
     def init(self, layers, biases, randThreshold, randChange):
         self.layers = copy.deepcopy(layers)
         self.biases = copy.deepcopy(biases)
+        for arr in self.biases:
+            for bias in arr:
+                n = np.random.uniform(-randChange, randChange)
+                bias[0] = n
         for iLayer in range(len(layers)):
             layer = self.layers[iLayer]
             
@@ -25,9 +29,9 @@ class NeuralNetwork:
                     weight = x[iweight]     
                          
                     if(np.random.uniform(0, 1) < randThreshold):
-                        n = np.random.uniform(1 - randChange, 1 + randChange)
-                        
-                        self.layers[iLayer][ix][iweight] = weight * n
+                        # print("hej")
+                        n = np.random.uniform(-randChange, randChange)
+                        self.layers[iLayer][ix][iweight] = n
 
     def calcOutput(self, input):
         curValues = input
@@ -37,9 +41,16 @@ class NeuralNetwork:
             curValues = 1 / (1 + np.exp(-preValues))
         return curValues
         
-# inputSize = 785
+# inputSize = 8
 # test = NeuralNetwork()
 # test.randInit(inputSize, 10, 20, 1)
+# for arr in test.biases:
+#     for bias in arr:
+#         print(bias[0])
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
+# print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
 # print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
 # print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))
 # print(np.argmax(test.calcOutput(np.random.uniform(0, 1, (inputSize, 1)))))

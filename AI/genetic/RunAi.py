@@ -5,8 +5,9 @@ import math
 import pygame
 import pymunk
 
-MIN_POSITION = 16
-MAX_POSITION = 169
+MIN_POSITION = 0
+MAX_POSITION = 80
+ANGLE_SPEED = 0.01
 
 bestLayers = []
 bestBiases = []
@@ -14,18 +15,29 @@ for i in range(3):
     bestLayers.append(np.load(f'layers/bestLayer{i}.npy', allow_pickle=True))
     bestBiases.append(np.load(f'biases/bestBiases{i}.npy', allow_pickle=True))
 
-bestAgent = NeuralNetwork()
-bestAgent.init(bestLayers, bestBiases, 1, 0)
+print(bestLayers)
 
-def getDistanceToCenter(placement): #placement [0, 1]
-    center = 0.5
-    return abs(placement - center)
+bestAgent = NeuralNetwork()
+bestAgent.init(bestLayers, bestBiases, 0, 0)
+
+def realDistanceToCenter(ballX, ballY, floorX, floorY):
+    distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
+    # distance = math.sqrt(pow(ballX - floorX, 2))
+    #Normalize distance
+    normalDist = (distance - MIN_POSITION) / (MAX_POSITION - MIN_POSITION) 
+    # print(ballX)
+    # print(normalDist, " [0, 1]")
+    return normalDist
 
 # print(bestAgent.calcOutput(np.matrix([[0.4],[0.8]])))
 
 
 WIDTH, HEIGHT = 800, 600
 window = pygame.display.set_mode((WIDTH, HEIGHT))
+
+def getDistanceToCenter(placement): #placement [0, 1]
+    center = 0.5
+    return abs(placement - center)
 
 def draw(space, window, drawOptions):
     window.fill("white")
@@ -47,7 +59,7 @@ def createRotatingUBox(space, center, width, height, wall_thickness=10):
     t = wall_thickness
 
     y_centroid = calcCentroid(W, H, t)
-    offset_y = y_centroid
+    offset_y = 0
 
     # U shaped egdes
     floor_verts = [(-W/2, -t), (W/2, -t), (W/2, 0), (-W/2, 0)]
@@ -78,8 +90,12 @@ def createRotatingUBox(space, center, width, height, wall_thickness=10):
     return body
 
 def addBall(space, radius, mass):
+    # body = pymunk.Body(body_type=pymunk.Body.STATIC)
     body = pymunk.Body()
-    body.position = (350, 300)
+
+    # body.position = (400, 450)
+    body.position = (370, 450)
+
     shape = pymunk.Circle(body, radius)
     shape.mass = mass
     shape.elasticity = 0.1
@@ -106,7 +122,7 @@ def crateBounderies(space, width, height):
 def run(window, WIDTH, HEIGHT):
     run_flag = True
     clock = pygame.time.Clock()
-    fps = 60
+    fps = 20
     dt = 1 / fps
 
     space = pymunk.Space()
@@ -116,7 +132,7 @@ def run(window, WIDTH, HEIGHT):
     W = 200    # width of the U-box
     H = 200    # height of the side walls
     t = 10     # wall thickness
-    box = createRotatingUBox(space, (400, 400), W, H, wall_thickness=t)
+    box = createRotatingUBox(space, (400, 465), W, H, wall_thickness=t)
     ball_radius = 12
     ball = addBall(space, ball_radius, 30)
     
@@ -124,21 +140,15 @@ def run(window, WIDTH, HEIGHT):
     drawOptions = pymunk.pygame_util.DrawOptions(window)
 
     box.angle = math.pi
-    angleSpeed = 0.003
-    static_threshold = 0.122  #(about 7 degrees)
+    # angleSpeed = 0.003
+    static_threshold = 0 # 0.122  #(about 7 degrees)
 
     # Pre-calculate the local coordinate for the bottom point of the left wall.
-    offset_y = calcCentroid(W, H, t)
-    left_bottom_local = (-W/2, 0 - offset_y)
+    # offset_y = calcCentroid(W, H, t)
+    # left_bottom_local = (-W/2, 0 - offset_y)
 
     itera = 0
     while run_flag:
-        # input("hej")
-        # newAngle = input("go? ")
-        # if newAngle != "":
-        #     box.angle += float(newAngle)*0.1
-
-
         # Rotate the U-shaped box within set limits.
         # if box.angle >= math.pi + math.pi/6:
         #     angleSpeed *= -1
@@ -147,6 +157,13 @@ def run(window, WIDTH, HEIGHT):
         # box.angle += angleSpeed        
 
         # --- Static friction simulation for the ball ---
+
+        # left_bottom_world = box.local_to_world(left_bottom_local)
+        # ball_pos = ball.position
+        # dist = math.sqrt((ball_pos[0] - left_bottom_world[0])**2 +
+        #                 (ball_pos[1] - left_bottom_world[1])**2)
+        # gap = dist - ball_radius
+        # dist = (gap - MIN_POSITION) / (MAX_POSITION - MIN_POSITION) 
 
         tilt_offset = box.angle - math.pi  # deviation from the "neutral" angle
         if abs(tilt_offset) < static_threshold:
@@ -158,23 +175,42 @@ def run(window, WIDTH, HEIGHT):
         # --- End static friction simulation ---
 
         # Calculate the distance from the ball's center to the bottom point of the left wall.
-        left_bottom_world = box.local_to_world(left_bottom_local)
-        ball_pos = ball.position
-        dist = math.sqrt((ball_pos[0] - left_bottom_world[0])**2 +
-                         (ball_pos[1] - left_bottom_world[1])**2)
-        gap = dist - ball_radius
+        # left_bottom_world = box.local_to_world(left_bottom_local)
+        # ball_pos = ball.position
+        # dist = math.sqrt((ball_pos[0] - left_bottom_world[0])**2 +
+                        #  (ball_pos[1] - left_bottom_world[1])**2)
+        # gap = dist - ball_radius
 
         # print([[box.angle/(2*math.pi)],[gap/170]])
         # print((np.argmax(bestAgent.calcOutput(np.matrix([[box.angle/(2*math.pi)],[gap/170]]))) - 1))
-        box.angle += (np.argmax(bestAgent.calcOutput(np.matrix([[box.angle/(2*math.pi)],[gap/170]]))) - 1) * 0.1
-        # print("Distance from ball center to vertex:", dist)
+       
+        # UDKOMMENTER
+        # box.angle += (np.argmax(bestAgent.calcOutput(np.matrix([[box.angle/(2*math.pi)],[gap/170]]))) - 1) * 0.003
+        
+        dist = realDistanceToCenter(ball.position[0], ball.position[1], 400, 450)
+        angle = (box.angle - ((math.pi) - (math.pi / 18))) / (((math.pi) + (math.pi / 18)) - ((math.pi) - (math.pi / 18)))
+        print(angle)
+        retning = np.argmax(bestAgent.calcOutput(np.matrix([[angle],[dist]]))) - 1
+        action = retning * bestAgent.calcOutput(np.matrix([[angle],[dist]]))[retning + 1, 0] * ANGLE_SPEED
+        
+        box.angle += action
+
+        box.angle = min(box.angle, (math.pi) + (math.pi / 18))
+        box.angle = max(box.angle, (math.pi) - (math.pi / 18))
+        # print("after", box.angle)
+        
+        # # print("Distance from ball center to vertex:", dist)
         # print("Gap from ball surface to bottom point of left edge:", gap)
-        dist = (gap - MIN_POSITION) / (MAX_POSITION - MIN_POSITION) 
+        # dist = (gap - MIN_POSITION) / (MAX_POSITION - MIN_POSITION) 
         # print(dist)
         itera += 1
         draw(space, window, drawOptions)
         space.step(dt)
         clock.tick(fps)
+        # if (itera == 50):
+        #     print("Dist:", getDistanceToCenter(dist))
+        #     print("Pos:", ball.position)
+        #     hej = input("Wait")
 
     pygame.quit()
 
