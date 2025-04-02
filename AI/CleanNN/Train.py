@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from NeuralNetwork import NeuralNetwork
 from Environment import Environment
 
-MAX_POSITION = 90
+MAX_POSITION = 80 # 90
 MIN_POSITION = 0
 
 ANGLE_SPEED = 0.05
@@ -25,6 +25,9 @@ environments = []
 neuralNetworks = []
 results = []
 
+previousStates = [] #2D
+PREVIOUS_STATES = 3
+
 def normalize(val, min, max):
     return (val - min) / (max - min)
 
@@ -38,14 +41,12 @@ def realDistanceToCenter(ballX, ballY, floorX, floorY):
     distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
     nDist = normalizeDist(distance)
     
-    if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
-    return nDist
+    # if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
+    return max(min(1, nDist), 0)
 
 
 def initialize():
-    global environments
-    global neuralNetworks
-    global results
+    global environments, neuralNetworks, results, previousStates
     
     for i in range(AMOUNT_OF_ENVIRONMENTS):
         env = Environment()
@@ -53,17 +54,16 @@ def initialize():
         environments.append(env)
         
         # results.append(MAX_POSITION)
+        previousStates.append([])
         results.append([])
         
         network = NeuralNetwork()
-        network.randInit(2, 3, 20, 1)
+        network.randInit(2 * PREVIOUS_STATES, 3, 20, 2)
         neuralNetworks.append(network)
     
         
 def removeNetworks(amount):
-    global environments
-    global neuralNetworks
-    global results
+    global environments, neuralNetworks, results, previousStates
 
     meanRes = []
     for res in results:
@@ -76,22 +76,22 @@ def removeNetworks(amount):
         results.pop(index)
         environments.pop(index)
         neuralNetworks.pop(index)
+        previousStates.pop(index)
       
         
-def addNetworks(amount):
-    global environments
-    global neuralNetworks
-    global results
+def addNetworks(amount, changeThresHold = 0.9, randChange = 1):
+    global environments, neuralNetworks, results, previousStates
     
     startLen = len(neuralNetworks)
     
     for i, agent in enumerate(neuralNetworks):
         for j in range(amount):
             newNet = NeuralNetwork()
-            newNet.init(agent.layers, agent.biases, 0.5, 1) #Change apropriately
+            newNet.init(agent.layers, agent.biases, changeThresHold, randChange) #Change apropriately
             neuralNetworks.append(newNet)
             # results.append(MAX_POSITION) #Initialize position
             results.append([])
+            previousStates.append([])
         
         if i == startLen - 1:
             break
@@ -102,7 +102,8 @@ def addNetworks(amount):
         env = Environment()
         env.init(DRAW_ENV)
         environments.append(env)
-    
+
+
 
 def errorHandler(): #Print any errors which made cause an the program to malfunction
     if AMOUNT_OF_ENVIRONMENTS % 2 != 0:             print("ISSUE: AMOUNT_OF_ENVIRONMENTS must be even. It's currently ", AMOUNT_OF_ENVIRONMENTS)
@@ -112,19 +113,38 @@ def errorHandler(): #Print any errors which made cause an the program to malfunc
     if REMOVE_TOP >= REMOVE_BOTTOM: print(f"REMOVE_TOP {REMOVE_TOP} must be smaller than REMOVE_BOTTOM {REMOVE_BOTTOM}")
 
 def run(steps, totalIterations = 0, thisIteration = 0):
-    global environments
-    global neuralNetworks
-    global results
+    global environments, neuralNetworks, results, previousStates
     
     for _ in range(steps):
         for i in range(AMOUNT_OF_ENVIRONMENTS):
             env = environments[i]
             
-            # calc dist, dir, angle, newAngle etc.
+            #Get current
             dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
             angle = normalizeAngle(env.plane.angle)
             
-            possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
+            currentState = [[angle], [dist]]
+            previousStates[i].append(currentState)
+            
+            # Correct previousStates
+            if len(previousStates[i]) < PREVIOUS_STATES:
+                amount = PREVIOUS_STATES - len(previousStates[i])
+                rightsize = [currentState] * amount + previousStates[i]
+            else:
+                rightsize = previousStates[i][-PREVIOUS_STATES:]
+
+            # Keep only the most recent PREVIOUS_STATES
+            if len(rightsize) > PREVIOUS_STATES:
+                rightsize = rightsize[-PREVIOUS_STATES:]
+                previousStates[i] = rightsize 
+                
+            #Convert to (2 * PREVIOUS_STATES, 1)
+            input_vector = np.vstack(rightsize)
+            
+            if len(input_vector) != 2 * PREVIOUS_STATES: print(f"ISSUE len(input_vector) {len(input_vector)} SHOULD BE 2 * PREVIOUS_STATES {2 * PREVIOUS_STATES} ")
+            
+            # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
+            possibleMoves = neuralNetworks[i].calcOutput(input_vector)
             dir =  np.argmax(possibleMoves) - 1
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
@@ -136,15 +156,17 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             results[i].append(dist)
     
 
-STEPS = 10
+STEPS = 5
 INTERATIONS = 100
 
 initialize()
 bestResults = []
+allSteps = []
 
 for i in range(INTERATIONS):
     run(STEPS, INTERATIONS, i + 1)
-    STEPS += 4
+    
+    STEPS += 1
     
     # Calc best result
     meanRes = []
@@ -156,9 +178,11 @@ for i in range(INTERATIONS):
     else: print(f"Iteration: {i}, score: {min(meanRes)}")
 
     if i == INTERATIONS - 1: break
-    bestResults.append(min(meanRes))
+    allSteps.append(STEPS * 0.001) #amount of steps / 1000
+    bestResults.append(round(min(meanRes), 4))
+    
     removeNetworks(int(AMOUNT_OF_ENVIRONMENTS / REMOVE_BOTTOM) * REMOVE_TOP)
-    addNetworks(REMOVE_TOP)
+    addNetworks(REMOVE_TOP, 0.9, 1)
     
     
     errorHandler()
@@ -168,5 +192,8 @@ for i in range(INTERATIONS):
 # indexBest = np.argmin(meanRes)
 
 xbestResults = np.arange(len(bestResults))
+
+print(xbestResults, bestResults)
 plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
+plt.plot(xbestResults, allSteps, marker='o', linestyle='-')
 plt.show()

@@ -34,14 +34,17 @@ class NeuralNetwork:
                          
                     if(np.random.uniform(0, 1) < randThreshold):
                         # print("hej")
-                        n = np.random.uniform(-randChange, randChange)
-                        self.layers[iLayer][ix][iweight] = n
-
+                        n = np.random.uniform(-.5, .5)
+                        self.layers[iLayer][ix][iweight] += n
+    
 
     def calcOutput(self, input):
         curValues = input
 
         for i, layer in enumerate(self.layers):
             preValues = self.biases[i] + layer @ curValues
-            curValues = 1 / (1 + np.exp(-preValues))
+            # curValues = 1 / (1 + np.exp(-preValues)) #SIGMOID
+            
+            # curValues = np.maximum(0, preValues)  # ReLU activation
+            curValues = np.minimum(0.5, np.maximum(0, preValues))  # ReLU-0.5 activation
         return curValues

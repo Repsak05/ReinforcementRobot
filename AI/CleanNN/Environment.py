@@ -2,6 +2,7 @@ import pymunk
 import pygame
 import pymunk.pygame_util
 import math
+import numpy as np
 
 class Environment:
     
@@ -108,7 +109,7 @@ class Environment:
         return body
     
     def realDistanceToCenter(self):
-        distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - self.center[1]), 2))
+        distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - (self.center[1] - 15)), 2))
 
         normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
         return normalDist
