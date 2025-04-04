@@ -26,7 +26,8 @@ class Environment:
         self.space.gravity = (0, 981)
 
         # xStart = np.random.uniform(340, 460)
-        startPos = (460, 450)
+        # startPos = (460, 450)
+        startPos = (360, 450)
 
         self.ball = self.addBall(12, 30, startPos, False)
         # self.hej = self.addBall(12, 30, (400, 450), True)

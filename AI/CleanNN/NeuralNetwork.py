@@ -14,14 +14,15 @@ class NeuralNetwork:
         self.biases.append(np.zeros((outputSize,1)))
         self.layers.append(np.random.uniform(-0.5, 0.5, (outputSize, hiddenLayerSize)))
 
-    def init(self, layers, biases, randThreshold, randChange):
+    def init(self, layers, biases, randThreshold, biasThreshold, randChange):
         self.layers = copy.deepcopy(layers)
         self.biases = copy.deepcopy(biases)
         
         for arr in self.biases:
             for bias in arr:
-                n = np.random.uniform(-randChange, randChange)
-                bias[0] = n
+                if(np.random.uniform(0, 1) < biasThreshold):
+                    n = np.random.uniform(-randChange, randChange)
+                    bias[0] = n
                 
         for iLayer in range(len(layers)):
             layer = self.layers[iLayer]
@@ -31,9 +32,7 @@ class NeuralNetwork:
                 
                 for iweight in range(len(x)):
                     weight = x[iweight]     
-                         
                     if(np.random.uniform(0, 1) < randThreshold):
-                        # print("hej")
                         n = np.random.uniform(-randChange, randChange)
                         self.layers[iLayer][ix][iweight] = n
 

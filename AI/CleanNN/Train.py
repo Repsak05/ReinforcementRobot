@@ -88,7 +88,7 @@ def addNetworks(amount):
     for i, agent in enumerate(neuralNetworks):
         for j in range(amount):
             newNet = NeuralNetwork()
-            newNet.init(agent.layers, agent.biases, 0.1, 1) #Change apropriately
+            newNet.init(agent.layers, agent.biases, 0.1, 0.9, 1) #Change apropriately
             neuralNetworks.append(newNet)
             # results.append(MAX_POSITION) #Initialize position
             results.append([])
@@ -152,10 +152,13 @@ def run(steps, totalIterations = 0, thisIteration = 0):
                     TimeCheck = False
                 env.runDraw(action) #Draw 
 
-            # if(): env.runDraw(action)
+            # if(DRAW_ENV): env.runDraw(action)
             else: env.run(action)
             # env.runDraw(action)
-            results[i].append(dist)
+
+            if dist > 0.8: results[i].append(1)
+            else: results[i].append(dist)
+            # results[i].append(dist)
     
 
 STEPS = 30
@@ -167,14 +170,20 @@ bestResults = []
 
 startTime = time.time()
 
+global curBestNet
+
 for i in range(INTERATIONS):
     run(STEPS, INTERATIONS, i + 1)
-    STEPS += 4
+    
+    if STEPS < 200: STEPS += 4
     
     # Calc best result
     meanRes = []
     for res in results:
         meanRes.append(np.mean(res))
+
+    bestIndex = np.argmin(meanRes)
+    curBestNet = neuralNetworks[bestIndex]
         
     # Print res
     if(i < 10): print(f"Iteration: 0{i}, score: {min(meanRes)}")
@@ -193,6 +202,14 @@ for env in environments:
 
 #Draw score
 # indexBest = np.argmin(meanRes)
+
+for i, layer in enumerate(curBestNet.layers):
+    np.save(f"AIParams/Layers/Layer{i}", layer)
+for i, bias in enumerate(curBestNet.biases):
+    np.save(f"AIParams/Biases/Bias{i}", bias)
+
+print("\n\nSAVED SAVED SAVED\n\n")
+print(curBestNet.biases)
 
 xbestResults = np.arange(len(bestResults))
 plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
