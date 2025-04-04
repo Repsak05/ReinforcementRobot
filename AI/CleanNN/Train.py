@@ -32,7 +32,7 @@ def normalizeDist(value):
     return (value - MIN_POSITION) / (MAX_POSITION - MIN_POSITION)
 
 def normalizeAngle(angle):
-    return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_POSITION)
+    return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_POSITION)  # -MIN_POSITION ??????????
 
 def realDistanceToCenter(ballX, ballY, floorX, floorY):
     distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
