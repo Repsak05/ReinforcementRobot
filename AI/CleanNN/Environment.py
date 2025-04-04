@@ -4,17 +4,24 @@ import pymunk.pygame_util
 import math
 import numpy as np
 
+from pymunk.vec2d import Vec2d # skal bare fjernes
+
 class Environment:
     
     def init(self, draw = False):
         self.drawBool = draw
 
-        self.MIN_POSITION = 0
-        self.MAX_POSITION = 80
+        # self.MIN_POSITION = 0
+        # self.MAX_POSITION = 80
+
+        self.MIN_POSITION = 10.5
+        self.MAX_POSITION = 172.3
 
         self.staticThreshold = 0
 
         self.center = (400, 465)
+
+        self.centerDistToSide = math.sqrt((490 - self.center[0])**2 + (450 - self.center[1])**2)
         
         self.WIDTH = 800
         self.HEIGHT = 600
@@ -29,7 +36,7 @@ class Environment:
         startPos = (460, 450)
 
         self.ball = self.addBall(12, 30, startPos, False)
-        # self.hej = self.addBall(12, 30, (400, 450), True)
+        # self.hej = self.addBall(12, 30, (490, 450), True)
 
         startDist = self.realDistanceToCenter(startPos[0],startPos[1], self.center[0], self.center[1])
         
@@ -124,12 +131,12 @@ class Environment:
         if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
         return nDist
     
-    # def realDistanceToCenter(self):
-    #     distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - self.center[1]), 2))
-
-    #     normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
-    #     return normalDist
-
+    def realDistFromSide(self):
+        sidePos = (math.cos(self.plane.angle - math.pi) * self.centerDistToSide + 400, math.sin(self.plane.angle - math.pi) * self.centerDistToSide + 450)
+        
+        distancefromSide = math.sqrt((sidePos[0] - self.ball.position[0])**2 + (sidePos[1] - self.ball.position[1])**2)
+        # return distancefromSide
+        return self.normalizeDist(distancefromSide)
 
     def stop(self):
         pygame.quit()
@@ -138,4 +145,5 @@ class Environment:
 # env.init(True)
 
 # while True:
-#     env.runDraw()
+#     env.runDraw(0.001)
+#     print(env.realDistFromSide())

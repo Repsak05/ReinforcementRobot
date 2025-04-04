@@ -41,6 +41,10 @@ def realDistanceToCenter(ballX, ballY, floorX, floorY):
     if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
     return nDist
 
+# def distToCenterFromPos(sideDist, max, min):
+#     center = (max-min) / 2
+
+
 
 def initialize():
     global environments
@@ -126,12 +130,10 @@ def run(steps, totalIterations = 0, thisIteration = 0):
 
             env.steps[2][0] = env.steps[0][0]
             env.steps[3][0] = env.steps[1][0]
-
-            # env.steps[2][0] = angle
-            # env.steps[3][0] = dist
             
             # calc dist, dir, angle, newAngle etc.
-            dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
+            # dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
+            dist = env.realDistFromSide()
             angle = normalizeAngle(env.plane.angle)
 
             env.steps[0][0] = angle
@@ -155,11 +157,12 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             # if(): env.runDraw(action)
             else: env.run(action)
             # env.runDraw(action)
-            results[i].append(dist)
+            # results[i].append(dist)
+            results[i].append(abs(0.5 - dist))
     
 
 STEPS = 30
-INTERATIONS = 100
+INTERATIONS = 50
 TimeCheck = True
 
 initialize()
@@ -172,6 +175,7 @@ for i in range(INTERATIONS):
     STEPS += 4
     
     # Calc best result
+    # print(results)
     meanRes = []
     for res in results:
         meanRes.append(np.mean(res))
