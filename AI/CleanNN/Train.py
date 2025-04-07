@@ -14,12 +14,16 @@ MIN_ANGLE = math.pi - math.pi / 18
 MAX_ANGLE = math.pi + math.pi / 18
 
 AMOUNT_OF_ENVIRONMENTS = 50 #Must be an even number 
-DRAW_ENV = True
+DRAW_ENV = False
 
 REMOVE_TOP = 9       #Fraction of how many is being removed REMOVE_TOP / REMOVE_BOTTOM
 REMOVE_BOTTOM = 10   # e.g. 9 / 10, then 9/10th's is being removed
 
 CENTER_BOX = [400, 450]
+
+STEPS = 30
+INTERATIONS = 100
+TimeCheck = True
 
 environments = []
 neuralNetworks = []
@@ -32,7 +36,7 @@ def normalizeDist(value):
     return (value - MIN_POSITION) / (MAX_POSITION - MIN_POSITION)
 
 def normalizeAngle(angle):
-    return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_POSITION)  # -MIN_POSITION ??????????
+    return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE)  # -MIN_POSITION ??????????
 
 def realDistanceToCenter(ballX, ballY, floorX, floorY):
     distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
@@ -128,11 +132,13 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             env.steps[3][0] = env.steps[1][0]
             
             # calc dist, dir, angle, newAngle etc.
-            dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
+            # dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
+            dist = env.realDistFromSide()
             angle = normalizeAngle(env.plane.angle)
 
             env.steps[0][0] = angle
             env.steps[1][0] = dist
+
             
             # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
             possibleMoves = neuralNetworks[i].calcOutput(env.steps)
@@ -149,20 +155,21 @@ def run(steps, totalIterations = 0, thisIteration = 0):
 
             # # if(DRAW_ENV): env.runDraw(action)
             # else: env.run(action)
-            env.runDraw(action)
-            # env.run(action)
+            # env.runDraw(action)
+            env.run(action)
 
             # if dist > 0.8: results[i].append(1)
             # else: results[i].append(dist)
-            results[i].append(dist)
+            results[i].append(abs(0.5 - dist)*2)
     
-
-STEPS = 30
-INTERATIONS = 200
-TimeCheck = True
 
 initialize()
 bestResults = []
+
+for j, layer in enumerate(neuralNetworks[0].layers):
+    np.save(f"AIParams/Layers/Layer{j}", layer)
+for j, bias in enumerate(neuralNetworks[0].biases):
+    np.save(f"AIParams/Biases/Bias{j}", bias)
 
 startTime = time.time()
 itersPerSave = 10

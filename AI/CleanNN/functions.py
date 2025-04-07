@@ -6,8 +6,11 @@ COM = "COM5"
 BAUD = 115200
 SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
-MIN_ANGLE = math.pi - math.pi / 18
-MAX_ANGLE = math.pi + math.pi / 18
+MIN_ANGLE = math.pi / 2 - math.pi / 18
+MAX_ANGLE = math.pi / 2 + math.pi / 18
+
+def normalizeAngle(angle):
+    return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE)
 
 def loadNetwork(path, layerCount, layers, biases):
     for i in range(layerCount):
@@ -29,7 +32,8 @@ def readSerial():
             distance = SERIAL.readline().decode().strip()
             # print("dist:",distance)
     
-    return (int(distance)-30)/(235-30)
+    # return int(distance)
+    return (int(distance)-30)/(240-30)
 
-def normalizeAngle(angle):
-    return (angle - MIN_ANGLE) / (MAX_ANGLE - 0)  # -MIN_POSITION ??????????
+# def normalizeAngle(angle):
+#     return (angle - MIN_ANGLE) / (MAX_ANGLE - 0)  # -MIN_POSITION ??????????
