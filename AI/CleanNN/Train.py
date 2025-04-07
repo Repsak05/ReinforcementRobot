@@ -126,9 +126,6 @@ def run(steps, totalIterations = 0, thisIteration = 0):
 
             env.steps[2][0] = env.steps[0][0]
             env.steps[3][0] = env.steps[1][0]
-
-            # env.steps[2][0] = angle
-            # env.steps[3][0] = dist
             
             # calc dist, dir, angle, newAngle etc.
             dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
@@ -140,42 +137,42 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
             possibleMoves = neuralNetworks[i].calcOutput(env.steps)
 
-            
-
             dir =  np.argmax(possibleMoves) - 1
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
             #Insert distance
-            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
-                if (TimeCheck): 
-                    print("Time:",time.time() - startTime)
-                    TimeCheck = False
-                env.runDraw(action) #Draw 
+            # if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
+            #     if (TimeCheck): 
+            #         print("Time:",time.time() - startTime)
+            #         TimeCheck = False
+            #     env.runDraw(action) #Draw 
 
-            # if(DRAW_ENV): env.runDraw(action)
-            else: env.run(action)
-            # env.runDraw(action)
+            # # if(DRAW_ENV): env.runDraw(action)
+            # else: env.run(action)
+            env.runDraw(action)
+            # env.run(action)
 
-            if dist > 0.8: results[i].append(1)
-            else: results[i].append(dist)
-            # results[i].append(dist)
+            # if dist > 0.8: results[i].append(1)
+            # else: results[i].append(dist)
+            results[i].append(dist)
     
 
 STEPS = 30
-INTERATIONS = 100
+INTERATIONS = 200
 TimeCheck = True
 
 initialize()
 bestResults = []
 
 startTime = time.time()
+itersPerSave = 10
 
 global curBestNet
 
 for i in range(INTERATIONS):
     run(STEPS, INTERATIONS, i + 1)
     
-    if STEPS < 200: STEPS += 4
+    if STEPS < 250: STEPS += 4
     
     # Calc best result
     meanRes = []
@@ -184,6 +181,15 @@ for i in range(INTERATIONS):
 
     bestIndex = np.argmin(meanRes)
     curBestNet = neuralNetworks[bestIndex]
+
+    if i == itersPerSave:
+        itersPerSave += 10
+        # print("New Network Run")
+        for j, layer in enumerate(curBestNet.layers):
+            np.save(f"AIParams/Layers/Layer{j}", layer)
+        for j, bias in enumerate(curBestNet.biases):
+            np.save(f"AIParams/Biases/Bias{j}", bias)
+
         
     # Print res
     if(i < 10): print(f"Iteration: 0{i}, score: {min(meanRes)}")
@@ -209,7 +215,7 @@ for i, bias in enumerate(curBestNet.biases):
     np.save(f"AIParams/Biases/Bias{i}", bias)
 
 print("\n\nSAVED SAVED SAVED\n\n")
-print(curBestNet.biases)
+# print(curBestNet.biases)
 
 xbestResults = np.arange(len(bestResults))
 plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
