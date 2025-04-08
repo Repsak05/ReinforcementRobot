@@ -13,18 +13,18 @@ MAX_ANGLE = math.pi + math.pi / 18
 
 CENTER_BOX = [400, 450]
 
-def normalizeDist(value):
-    return (value - MIN_POSITION) / (MAX_POSITION - MIN_POSITION)
+# def normalizeDist(value):
+#     return (value - MIN_POSITION) / (MAX_POSITION - MIN_POSITION)
 
 def normalizeAngle(angle):
     return (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_POSITION)
 
-def realDistanceToCenter(ballX, ballY, floorX, floorY):
-    distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
-    nDist = normalizeDist(distance)
+# def realDistanceToCenter(ballX, ballY, floorX, floorY):
+#     distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
+#     nDist = normalizeDist(distance)
     
-    if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
-    return nDist
+#     if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
+#     return nDist
 
 layers = []
 biases = []
@@ -60,8 +60,6 @@ while True:
     possibleMoves = network.calcOutput(env.steps)
 
     # print(possibleMoves)
-
-    
 
     dir =  np.argmax(possibleMoves) - 1
     action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED

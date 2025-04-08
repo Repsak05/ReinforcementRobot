@@ -80,21 +80,21 @@ while(1):
     writeToArduino(math.degrees(angle))
     distNorm = readSerial()
 
-    if startTime + RELOAD_TIME < time.time() and UpdateNetwork:
-    #     distancesMean.append(np.mean(distances))
-    #     xVals.append(i)
-    #     i += 1
-    #     distances = []
-    #     plt.plot(xVals, distancesMean, color='red')
-    #     plt.pause(0.01)
+    # if startTime + RELOAD_TIME < time.time() and UpdateNetwork:
+    # #     distancesMean.append(np.mean(distances))
+    # #     xVals.append(i)
+    # #     i += 1
+    # #     distances = []
+    # #     plt.plot(xVals, distancesMean, color='red')
+    # #     plt.pause(0.01)
 
-        print("Start Load")
-        oldLayers = layers
-        layers = []
-        biases = []
-        loadNetwork(PATH_NAME, 3, layers, biases)
-        network.init(layers, biases, 0, 0, 0)
-        writeToArduino(90)
-        time.sleep(1)
-        startTime = time.time()
-        print("Stop Load")
+    #     print("Start Load")
+    #     oldLayers = layers
+    #     layers = []
+    #     biases = []
+    #     loadNetwork(PATH_NAME, 3, layers, biases)
+    #     network.init(layers, biases, 0, 0, 0)
+    #     writeToArduino(90)
+    #     time.sleep(1)
+    #     startTime = time.time()
+    #     print("Stop Load")

@@ -6,23 +6,42 @@ import time
 from NeuralNetwork import NeuralNetwork
 from Environment import Environment
 
-MAX_POSITION = 90
-MIN_POSITION = 0
 
-ANGLE_SPEED = 0.05
+
+
+
+
+
+AMOUNT_OF_ENVIRONMENTS = 50 # Antal AI's der kører på samme tid (Skal gå op i 10)
+
+INTERATIONS = 300          # Antal omgange der skal laves nye generationer
+
+MIN_STEPS = 30              # Antal setps i begyndelsen
+MAX_STEPS = 250            # Maks antal steps der kan køres
+INC_STEPS = 4               # Hvor mange steps der tilføjes per iteration
+
+ANGLE_SPEED = 0.05          # Hvor hurtigt AI'en kan rotere
+
+
+
+
+
+
+
+
+
 MIN_ANGLE = math.pi - math.pi / 18
 MAX_ANGLE = math.pi + math.pi / 18
 
-AMOUNT_OF_ENVIRONMENTS = 50 #Must be an even number 
-DRAW_ENV = False
+MAX_POSITION = 90
+MIN_POSITION = 0
+
+DRAW_ENV = True
 
 REMOVE_TOP = 9       #Fraction of how many is being removed REMOVE_TOP / REMOVE_BOTTOM
 REMOVE_BOTTOM = 10   # e.g. 9 / 10, then 9/10th's is being removed
 
 CENTER_BOX = [400, 450]
-
-STEPS = 30
-INTERATIONS = 100
 TimeCheck = True
 
 environments = []
@@ -147,16 +166,16 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
             #Insert distance
-            # if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
-            #     if (TimeCheck): 
-            #         print("Time:",time.time() - startTime)
-            #         TimeCheck = False
-            #     env.runDraw(action) #Draw 
+            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
+                if (TimeCheck): 
+                    print("Time:",time.time() - startTime)
+                    TimeCheck = False
+                env.runDraw(action) #Draw 
 
-            # # if(DRAW_ENV): env.runDraw(action)
-            # else: env.run(action)
+            # if(DRAW_ENV): env.runDraw(action)
+            else: env.run(action)
             # env.runDraw(action)
-            env.run(action)
+            # env.run(action)
 
             # if dist > 0.8: results[i].append(1)
             # else: results[i].append(dist)
@@ -177,9 +196,9 @@ itersPerSave = 10
 global curBestNet
 
 for i in range(INTERATIONS):
-    run(STEPS, INTERATIONS, i + 1)
+    run(MIN_STEPS, INTERATIONS, i + 1)
     
-    if STEPS < 250: STEPS += 4
+    if MIN_STEPS < MAX_STEPS: MIN_STEPS += INC_STEPS
     
     # Calc best result
     meanRes = []
