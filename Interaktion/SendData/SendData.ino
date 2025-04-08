@@ -1,144 +1,97 @@
-/*
-  Web client
-
-  This sketch connects to a website (http://www.google.com)
-  using the WiFi module.
-
-  This example is written for a network using WPA encryption. For
-  WEP or WPA, change the WiFi.begin() call accordingly.
-
-  This example is written for a network using WPA encryption. For
-  WEP or WPA, change the WiFi.begin() call accordingly.
+#include <Wire.h>
+#include "rgb_lcd.h"
+// #include <Encoder.h>
+rgb_lcd lcd;
 
 
-  created 13 July 2010
-  by dlf (Metodo2 srl)
-  modified 31 May 2012
-  by Tom Igoe
+// Encoder knobRight(2, 3);
+// int positionRight = 0;
 
-  Find the full UNO R4 WiFi Network documentation here:
-  https://docs.arduino.cc/tutorials/uno-r4-wifi/wifi-examples#wi-fi-web-client
- */
+#define PREVIOUS_POSITIONS A0  
+#define AMOUNT_OF_LAYERS A1  
+#define STEPS A2 
 
 
-#include "WiFiS3.h"
+String types[7] = {"hiddenLayers", "neuronsInHiddenLayer", "previousStates", "steps", "angleSpeed", "antalIterationer", "malPlacering"};
+int   values[7] = {1,               20,                     3,                5,       5,            50,                 50};
 
-
-// #include "arduino_secrets.h" 
-
-///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = "iot";        // your network SSID (name)
-char pass[] = "mrfunkfunk";    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;            // your network key index number (needed only for WEP)
-
-int status = WL_IDLE_STATUS;
-// if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "www.google.com";    // name address for Google (using DNS)
-
-// Initialize the Ethernet client library
-// with the IP address and port of the server
-// that you want to connect to (port 80 is default for HTTP):
-WiFiSSLClient client;
-/* -------------------------------------------------------------------------- */
-void setup() {
-/* -------------------------------------------------------------------------- */  
-  //Initialize serial and wait for port to open:
+void setup(){
   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-  
-  // check for the WiFi module:
-  if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("Communication with WiFi module failed!");
-    // don't continue
-    while (true);
-  }
-  
-  String fv = WiFi.firmwareVersion();
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    Serial.println("Please upgrade the firmware");
-  }
-  
-  // attempt to connect to WiFi network:
-  while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
-     
-    // wait 10 seconds for connection:
-    delay(1000);
-  }
-  
-  printWifiStatus();
- 
-  Serial.println("\nStarting connection to server...");
-  // if you get a connection, report back via serial:
-  
-//  client.setInsecure();
-  if (client.connect(server, 443)) {
-    Serial.println("connected to server");
-    // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.1");
-    client.println("Host: www.google.com");
-    client.println("Connection: close");
-    client.println();
+  pinMode(PREVIOUS_POSITIONS, INPUT);
+  pinMode(AMOUNT_OF_LAYERS, INPUT);
+  pinMode(STEPS, INPUT);
+
+  lcd.begin(16, 2);
+  lcd.setRGB(200, 0, 0); //R
+}
+
+void writeOnLCD(String s, int val, int col, int row){
+  lcd.clear();
+  lcd.setCursor(col, row);
+  lcd.print(s);
+  lcd.setCursor(0, row + 1);
+  lcd.print(val);
+}
+
+int convertBetweenPositions(int current, int MIN, int MAX){
+  float start = 0;
+  float end = 1023;
+
+  return MIN + (abs(current / (start - end)) * (MAX - MIN));
+}
+
+// bool valueChanged(){
+
+// }
+
+void sendValue(String type, int value){
+  Serial.print(type + " ");
+  Serial.println(value);
+}
+
+void updateValue(int index, int value){
+  if(value != values[index]){
+    values[index] = value;
+    sendValue(types[index], values[index]);
+    writeOnLCD(types[index], values[index], 0, 0);
   }
 }
 
-/* just wrap the received data up to 80 columns in the serial print*/
-/* -------------------------------------------------------------------------- */
-void read_response() {
-/* -------------------------------------------------------------------------- */  
-  uint32_t received_data_num = 0;
-  while (client.available()) {
-    /* actual data reception */
-    char c = client.read();
-    /* print data to serial port */
-    Serial.print(c);
-    /* wrap data to 80 columns*/
-    received_data_num++;
-    if(received_data_num % 80 == 0) { 
-      Serial.println();
-    }
-  }  
-}
+// int getEncoderPosition(){
+//   int newRight;
+//   newRight = knobRight.read();
+//   if (newRight != positionRight) {
+//     Serial.println();
+//     sendValue("antalIterationer", positionRight);
+//     positionRight = newRight;
+//   }
+//   return int(newRight / 4);
+// }
 
-/* -------------------------------------------------------------------------- */
-void loop() {
-  delay(3000);
-/* -------------------------------------------------------------------------- */  
-  read_response();
 
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting from server.");
-    client.stop();
+int example = 1;
 
-    // do nothing forevermore:
-    while (true);
-  }
-}
 
-/* -------------------------------------------------------------------------- */
-void printWifiStatus() {
-/* -------------------------------------------------------------------------- */  
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+void loop(){
+  // sendValue(types[example], values[example]);
+  // getEncoderPosition();'
 
-  // print your board's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
 
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
+  int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
+  updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
+  
+  int previousPositions = analogRead(PREVIOUS_POSITIONS);
+  updateValue(2, convertBetweenPositions(previousPositions, 1, 100));
+
+  int steps = analogRead(STEPS);
+  updateValue(3, convertBetweenPositions(steps, 10, 300));
+
+  //Following slider doesn't work properly :(
+  // int iterations = analogRead(A3);
+  // updateValue(5, iterations);
+  
+
+
+
+  delay(100);
 }
