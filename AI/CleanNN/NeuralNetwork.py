@@ -43,5 +43,5 @@ class NeuralNetwork:
         for i, layer in enumerate(self.layers):
             preValues = self.biases[i] + layer @ curValues
             curValues = 1 / (1 + np.exp(-preValues))
-            # curValues = np.minimum(6, np.maximum(0, preValues))  # ReLU-0.5 activation
+            # curValues = np.minimum(.5, np.maximum(0, preValues))  # ReLU-0.5 activation
         return curValues
