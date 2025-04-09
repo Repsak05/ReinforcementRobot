@@ -7,20 +7,16 @@ BAUD = 115200
 SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
 initialValues = {
-    "hiddenLayers" : 1, 
-    "neuronsInHiddenLayer" : 20, 
-    "previousStates" : 3, 
-    "steps" : 200, 
-    "angleSpeed" : 5, #Should be devided by 100
-    "antalIterationer" : 50, 
-    "malPlacering" : 50, #Should be devided by 100
-    "start" : 0
+    "iterations" : 50,
+    "steps" : 250,
+    "previousStates" : 3,
+    "environments" : 50,
+    "mutationRate" : 90, #Should be devided by 100
+    "start" : 0,
 }
 
 def readSerial():
     allInput = ''
-    typeName = ""
-    value = 0
 
     if(SERIAL.is_open):
         
@@ -33,9 +29,6 @@ def readSerial():
                     value = both[1]
                     
                     initialValues[typeName] = value
-    
-    print({"type" : typeName, "value" : value})
-    return {"type" : typeName, "value" : value}
 
 
 
