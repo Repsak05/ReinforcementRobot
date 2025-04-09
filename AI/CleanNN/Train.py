@@ -2,6 +2,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import sys
 
 from NeuralNetwork import NeuralNetwork
 from Environment import Environment
@@ -22,7 +23,13 @@ INC_STEPS = 4               # Hvor mange steps der tilføjes per iteration
 
 ANGLE_SPEED = 0.05          # Hvor hurtigt AI'en kan rotere
 
+AMOUNT_HIDDEN_LAYERS = 1
 
+NEURONS_HIDDENLAYER = 20
+
+MAL_PLACERING = 0.5
+
+PREVIOUS_STATES = 6
 
 
 
@@ -79,7 +86,7 @@ def initialize():
         results.append([])
         
         network = NeuralNetwork()
-        network.randInit(6, 3, 20, 1)
+        network.randInit(PREVIOUS_STATES, 3, NEURONS_HIDDENLAYER, AMOUNT_HIDDEN_LAYERS)
         neuralNetworks.append(network)
     
         
@@ -179,8 +186,27 @@ def run(steps, totalIterations = 0, thisIteration = 0):
 
             # if dist > 0.8: results[i].append(1)
             # else: results[i].append(dist)
-            results[i].append(abs(0.5 - dist)*2)
+            results[i].append(abs(MAL_PLACERING - dist)*2)
     
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"Please provide 2 numbers as arguments. Not {len(sys.argv)} arguments")
+        sys.exit(1)
+
+    values = np.fromstring(sys.argv[1], dtype=int, sep=',')
+
+    AMOUNT_HIDDEN_LAYERS = values[0]
+    NEURONS_HIDDENLAYER = values[1]
+    PREVIOUS_STATES = values[2]
+    MAX_STEPS = values[3]
+    ANGLE_SPEED = values[4]/100
+    INTERATIONS = values[5]
+    MAL_PLACERING = values[6]/100
+
+    
+
+
 
 initialize()
 bestResults = []
@@ -243,6 +269,7 @@ for i, bias in enumerate(curBestNet.biases):
 print("\n\nSAVED SAVED SAVED\n\n")
 # print(curBestNet.biases)
 
-xbestResults = np.arange(len(bestResults))
-plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
-plt.show()
+# xbestResults = np.arange(len(bestResults))
+# plt.plot(xbestResults, bestResults, marker='o', linestyle='-')
+# plt.show()
+
