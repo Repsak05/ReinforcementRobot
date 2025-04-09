@@ -7,12 +7,12 @@ BAUD = 115200
 SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
 initialValues = {
-    "iterations" : 50,
-    "steps" : 250,
-    "previousStates" : 3,
-    "environments" : 50,
-    "mutationRate" : 90, #Should be devided by 100
-    "start" : 0,
+    "Iterationer" : 50,
+    "Max Sim Tid" : 250,
+    "Input Stadier" : 3,
+    "Parallelle AI's" : 50,
+    "Mutationsrate" : 90, #Should be devided by 100
+    "Start" : 0,
 }
 
 def readSerial():
@@ -29,11 +29,13 @@ def readSerial():
                     value = both[1]
                     
                     initialValues[typeName] = value
+                    print({"type" : typeName, "value" : value})
 
 
 
-# while initialValues["start"] == 0: 
-#     readSerial()
+while initialValues["Start"] == 0: 
+    # print(initialValues["start"])
+    readSerial()
     
 # Convert to correct format
 valuesStr = ""

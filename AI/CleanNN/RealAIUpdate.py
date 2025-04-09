@@ -21,15 +21,15 @@ biases = []
 loadNetwork(PATH_NAME, 3, layers, biases)
 
 PREVIOUS_STATES = int(len(layers[0][0])/2)
-steps = np.array([[math.pi],[1]])
+steps = np.array([[0.5],[1]])
 
 print(PREVIOUS_STATES)
 for _ in range(PREVIOUS_STATES - 1):
-    steps = np.append(steps, [[math.pi],[1]], axis=0)
+    steps = np.append(steps, [[0.5],[1]], axis=0)
 
 network = NeuralNetwork()
-network.init(layers, biases, 0, 0, 0)
-# network.randInit(6,3,20,1)
+# network.init(layers, biases, 0, 0, 0)
+network.randInit(PREVIOUS_STATES*2,3,20,1)
 
 angle = math.pi/2
 
@@ -57,7 +57,6 @@ while(1):
     steps = np.append(steps, [[angle],[distNorm]], axis=0)
     steps = steps[2:]
     # print("\nLENGTH:",len(steps))
-
     possibleMoves = network.calcOutput(steps)
 
     distances.append(abs(0.5 - distNorm)*2)

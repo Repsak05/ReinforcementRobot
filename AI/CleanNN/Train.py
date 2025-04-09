@@ -193,7 +193,7 @@ def run(steps, totalIterations = 0, thisIteration = 0):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print(f"Please provide 2 numbers as arguments. Not {len(sys.argv)} arguments")
+        print(f"Please provide 2 arguments. Not {len(sys.argv)} arguments")
         sys.exit(1)
 
     values = np.fromstring(sys.argv[1], dtype=int, sep=',')
