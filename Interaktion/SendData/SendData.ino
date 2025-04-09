@@ -7,13 +7,13 @@ rgb_lcd lcd;
 // Encoder knobRight(2, 3);
 // int positionRight = 0;
 
-#define PREVIOUS_POSITIONS A0  
 #define AMOUNT_OF_LAYERS A1  
 #define STEPS A2 
+#define PREVIOUS_POSITIONS A3  
 
-
+//                  0               1                       2                 3       4              5                   6
 String types[7] = {"hiddenLayers", "neuronsInHiddenLayer", "previousStates", "steps", "angleSpeed", "antalIterationer", "malPlacering"};
-int   values[7] = {1,               20,                     3,                5,       5,            50,                 50};
+int   values[7] = {1,               20,                     3,                200,     5,            50,                 50};
 
 void setup(){
   Serial.begin(9600);
@@ -45,7 +45,7 @@ int convertBetweenPositions(int current, int MIN, int MAX){
 // }
 
 void sendValue(String type, int value){
-  Serial.print(type + " ");
+  Serial.print(type + ": ");
   Serial.println(value);
 }
 
@@ -77,21 +77,20 @@ void loop(){
   // getEncoderPosition();'
 
 
-  int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
-  updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
+  // int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
+  // updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
   
-  int previousPositions = analogRead(PREVIOUS_POSITIONS);
-  updateValue(2, convertBetweenPositions(previousPositions, 1, 100));
+  // int previousPositions = analogRead(PREVIOUS_POSITIONS);
+  // updateValue(2, convertBetweenPositions(previousPositions, 1, 10));
 
-  int steps = analogRead(STEPS);
-  updateValue(3, convertBetweenPositions(steps, 10, 300));
+  // int steps = analogRead(STEPS);
+  // updateValue(3, convertBetweenPositions(steps, 1, 30) * 10);
 
   //Following slider doesn't work properly :(
-  // int iterations = analogRead(A3);
+  int iterations = analogRead(A3);
+  Serial.println(iterations);
   // updateValue(5, iterations);
   
-
-
 
   delay(100);
 }
