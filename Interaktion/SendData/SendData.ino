@@ -4,23 +4,26 @@
 rgb_lcd lcd;
 
 
+#define MUTATIONS_RATE A0   //Slider
+#define MAX_SIM_TID A1      //Rotary
+#define INPUT_STADIER A2    //Rotary
+#define AI A3               //Rotary  
+//MUTATIONSRATE             //Encoder
 Encoder myEnc(2, 3);
-int encoderPos = 1;
-int oldEncoderPos = -1;
+int currentEncoderPosition = 1;
+const int START = 4;
 
-#define AMOUNT_OF_LAYERS A1  
-#define STEPS A3 
-#define PREVIOUS_POSITIONS A3  
 
-//                  0               1                       2                 3       4              5                   6               7
-String types[8] = {"hiddenLayers", "neuronsInHiddenLayer", "previousStates", "steps", "angleSpeed", "antalIterationer", "malPlacering", "start"};
-int   values[8] = {1,               20,                     3,                200,     5,            50,                 50,             0};
+//                  0              1              2                3                  4               5              
+String types[6] = {"Iterationer", "Max Sim Tid", "Input Stadier", "Parallelle AI's", "Mutationsrate", "Start" };
+int   values[6] = {50,             250,           3,               50,                90,              0};
+
 
 void setup(){
-  Serial.begin(9600);
-  pinMode(PREVIOUS_POSITIONS, INPUT);
-  pinMode(AMOUNT_OF_LAYERS, INPUT);
-  pinMode(STEPS, INPUT);
+  Serial.begin(115200);
+  pinMode(AI, INPUT);
+  pinMode(MAX_SIM_TID, INPUT);
+  pinMode(INPUT_STADIER, INPUT);
 
   lcd.begin(16, 2);
   lcd.setRGB(200, 0, 0); //R
@@ -54,51 +57,32 @@ void updateValue(int index, int value){
   }
 }
 
-void updateEncoder(){
-    encoderPos = myEnc.read();
-
-    if (encoderPos != oldEncoderPos) {
-      oldEncoderPos = encoderPos;
-      Serial.println(encoderPos);
-    }
+int updateEncoder(){
+  int newVal = myEnc.read();
+  int increment = 5;
+  currentEncoderPosition = min(int(round(abs(newVal) / 4.0) * increment), 100);
+  return currentEncoderPosition;
 }
 
-// int getEncoderPosition(){
-//   int newRight;
-//   newRight = knobRight.read();
-//   if (newRight != positionRight) {
-//     Serial.println();
-//     sendValue("antalIterationer", positionRight);
-//     positionRight = newRight;
-//   }
-//   return int(newRight / 4);
-// }
-
-
-int example = 1;
-
-
 void loop(){
-  // sendValue(types[example], values[example]);
-  // getEncoderPosition();'
-  // updateEncoder();
-  updateValue(7, !digitalRead(4));
 
+  int maxSimulationsTid = analogRead(MAX_SIM_TID);
+  updateValue(1, convertBetweenPositions(maxSimulationsTid, 1, 30) * 10);
 
-  int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
-  updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
-  
-  // int previousPositions = analogRead(PREVIOUS_POSITIONS);
-  // updateValue(2, convertBetweenPositions(previousPositions, 1, 10));
+  int inputStadier = analogRead(INPUT_STADIER);
+  updateValue(2, convertBetweenPositions(inputStadier, 1, 10));
 
-  int steps = analogRead(STEPS);
-  updateValue(3, convertBetweenPositions(steps, 1, 30) * 10);
+  int parallelleAI = analogRead(AI);
+  updateValue(3, convertBetweenPositions(parallelleAI, 1, 20) * 10);
 
-  //Following slider doesn't work properly :(
-  int iterations = analogRead(A0);
-  updateValue(5, convertBetweenPositions(iterations, 1, 30) * 10);
+  int mutationsRate = analogRead(MUTATIONS_RATE);
+  updateValue(4, convertBetweenPositions(mutationsRate, 1, 100) * 2);
 
+  // Encoder
+  updateValue(0, updateEncoder());
+  Serial.println(currentEncoderPosition);
 
+  updateValue(5, !digitalRead(START)); //Press encoder to start
   
 
   delay(10);
