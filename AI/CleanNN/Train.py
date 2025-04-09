@@ -14,7 +14,7 @@ from Environment import Environment
 
 AMOUNT_OF_ENVIRONMENTS = 50 # Antal AI's der kører på samme tid (Skal gå op i 10)
 
-INTERATIONS = 300          # Antal omgange der skal laves nye generationer
+INTERATIONS = 100          # Antal omgange der skal laves nye generationer
 
 MIN_STEPS = 30              # Antal setps i begyndelsen
 MAX_STEPS = 250            # Maks antal steps der kan køres
@@ -36,7 +36,7 @@ MAX_ANGLE = math.pi + math.pi / 18
 MAX_POSITION = 90
 MIN_POSITION = 0
 
-DRAW_ENV = True
+DRAW_ENV = False
 
 REMOVE_TOP = 9       #Fraction of how many is being removed REMOVE_TOP / REMOVE_BOTTOM
 REMOVE_BOTTOM = 10   # e.g. 9 / 10, then 9/10th's is being removed
@@ -166,16 +166,16 @@ def run(steps, totalIterations = 0, thisIteration = 0):
             action = dir * possibleMoves[dir + 1, 0] * ANGLE_SPEED
             
             #Insert distance
-            if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
-                if (TimeCheck): 
-                    print("Time:",time.time() - startTime)
-                    TimeCheck = False
-                env.runDraw(action) #Draw 
+            # if(i == 0 and DRAW_ENV and totalIterations == thisIteration): 
+            #     if (TimeCheck): 
+            #         print("Time:",time.time() - startTime)
+            #         TimeCheck = False
+            #     env.runDraw(action) #Draw 
 
             # if(DRAW_ENV): env.runDraw(action)
-            else: env.run(action)
+            # else: env.run(action)
             # env.runDraw(action)
-            # env.run(action)
+            env.run(action)
 
             # if dist > 0.8: results[i].append(1)
             # else: results[i].append(dist)

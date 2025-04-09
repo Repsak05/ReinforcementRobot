@@ -1,13 +1,21 @@
 import subprocess
 
-subprocess.Popen(["python", "Train.py"])
+train = subprocess.Popen(["python", "Train.py"])
 
-subprocess.Popen(["python", "RealAi.py"])
-
-
-# os.system(f'python ')
+runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])
 
 
-# while(1):
-#     # print("Process 1: Kører")
-#     pass
+while(1):
+    stop = input()
+    if stop == "stop":
+        train.terminate()
+        runnerUpdate.terminate()
+        break
+
+runner = subprocess.Popen(["python", "RealAI.py"])
+
+while(1):
+    stop = input()
+    if stop == "stop":
+        runner.terminate()
+        break
