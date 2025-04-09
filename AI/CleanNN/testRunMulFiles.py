@@ -48,12 +48,14 @@ for key in initialValues:
     valuesStr += f"{initialValues[key]},"
 valuesStr = valuesStr[:-1]
 
+print(valuesStr)
+
 train = subprocess.Popen(["python", "Train.py", valuesStr])
 runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])
 
 while(1):
-    stop = input()
-    if stop == "stop":
+    # stop = input()
+    if train.poll() != None:
         train.terminate()
         runnerUpdate.terminate()
         break
