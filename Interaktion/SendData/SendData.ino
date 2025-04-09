@@ -1,19 +1,20 @@
 #include <Wire.h>
 #include "rgb_lcd.h"
-// #include <Encoder.h>
+#include <Encoder.h>
 rgb_lcd lcd;
 
 
-// Encoder knobRight(2, 3);
-// int positionRight = 0;
+Encoder myEnc(2, 3);
+int encoderPos = 1;
+int oldEncoderPos = -1;
 
 #define AMOUNT_OF_LAYERS A1  
-#define STEPS A2 
+#define STEPS A3 
 #define PREVIOUS_POSITIONS A3  
 
-//                  0               1                       2                 3       4              5                   6
-String types[7] = {"hiddenLayers", "neuronsInHiddenLayer", "previousStates", "steps", "angleSpeed", "antalIterationer", "malPlacering"};
-int   values[7] = {1,               20,                     3,                200,     5,            50,                 50};
+//                  0               1                       2                 3       4              5                   6               7
+String types[8] = {"hiddenLayers", "neuronsInHiddenLayer", "previousStates", "steps", "angleSpeed", "antalIterationer", "malPlacering", "start"};
+int   values[8] = {1,               20,                     3,                200,     5,            50,                 50,             0};
 
 void setup(){
   Serial.begin(9600);
@@ -37,12 +38,8 @@ int convertBetweenPositions(int current, int MIN, int MAX){
   float start = 0;
   float end = 1023;
 
-  return MIN + (abs(current / (start - end)) * (MAX - MIN));
+  return MIN + round(abs(current / (start - end)) * (MAX - MIN));
 }
-
-// bool valueChanged(){
-
-// }
 
 void sendValue(String type, int value){
   Serial.print(type + ": ");
@@ -55,6 +52,15 @@ void updateValue(int index, int value){
     sendValue(types[index], values[index]);
     writeOnLCD(types[index], values[index], 0, 0);
   }
+}
+
+void updateEncoder(){
+    encoderPos = myEnc.read();
+
+    if (encoderPos != oldEncoderPos) {
+      oldEncoderPos = encoderPos;
+      Serial.println(encoderPos);
+    }
 }
 
 // int getEncoderPosition(){
@@ -75,22 +81,25 @@ int example = 1;
 void loop(){
   // sendValue(types[example], values[example]);
   // getEncoderPosition();'
+  // updateEncoder();
+  updateValue(7, !digitalRead(4));
 
 
-  // int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
-  // updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
+  int amountOfLayers = analogRead(AMOUNT_OF_LAYERS);
+  updateValue(0, convertBetweenPositions(amountOfLayers, 1, 5));
   
   // int previousPositions = analogRead(PREVIOUS_POSITIONS);
   // updateValue(2, convertBetweenPositions(previousPositions, 1, 10));
 
-  // int steps = analogRead(STEPS);
-  // updateValue(3, convertBetweenPositions(steps, 1, 30) * 10);
+  int steps = analogRead(STEPS);
+  updateValue(3, convertBetweenPositions(steps, 1, 30) * 10);
 
   //Following slider doesn't work properly :(
-  int iterations = analogRead(A3);
-  Serial.println(iterations);
-  // updateValue(5, iterations);
+  int iterations = analogRead(A0);
+  updateValue(5, convertBetweenPositions(iterations, 1, 30) * 10);
+
+
   
 
-  delay(100);
+  delay(10);
 }
