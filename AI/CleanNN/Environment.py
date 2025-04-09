@@ -6,7 +6,7 @@ import numpy as np
 
 class Environment:
     
-    def init(self, draw = False):
+    def init(self, draw, PREVIOUS_STATES):
         self.drawBool = draw
 
         self.MIN_POSITION = 10.5
@@ -38,8 +38,10 @@ class Environment:
 
         startDist = self.realDistFromSide()
         
-        self.steps = np.array([[math.pi],[startDist],[math.pi],[startDist],[math.pi],[startDist]])
-
+        self.steps = np.array([[0.5],[startDist]])
+        # self.steps = np.array([[math.pi],[startDist],[math.pi],[startDist],[math.pi],[startDist]])
+        for _ in range(PREVIOUS_STATES - 1):
+            self.steps = np.append(self.steps, [[0.5],[startDist]], axis=0)
 
         
         if self.drawBool:

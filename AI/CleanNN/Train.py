@@ -34,6 +34,13 @@ PREVIOUS_STATES = 6
 
 
 
+INTERATIONS = 100
+MAX_STEPS = 250
+PREVIOUS_STATES = 3
+AMOUNT_OF_ENVIRONMENTS = 50
+MUTATION_RATE = 0.9
+
+
 
 
 
@@ -54,6 +61,7 @@ TimeCheck = True
 environments = []
 neuralNetworks = []
 results = []
+preStates = []
 
 def normalize(val, min, max):
     return (val - min) / (max - min)
@@ -79,14 +87,14 @@ def initialize():
     
     for i in range(AMOUNT_OF_ENVIRONMENTS):
         env = Environment()
-        env.init(DRAW_ENV)
+        env.init(DRAW_ENV, PREVIOUS_STATES)
         environments.append(env)
         
         # results.append(MAX_POSITION)
         results.append([])
         
         network = NeuralNetwork()
-        network.randInit(PREVIOUS_STATES, 3, NEURONS_HIDDENLAYER, AMOUNT_HIDDEN_LAYERS)
+        network.randInit(PREVIOUS_STATES * 2, 3, NEURONS_HIDDENLAYER, AMOUNT_HIDDEN_LAYERS)
         neuralNetworks.append(network)
     
         
@@ -118,7 +126,7 @@ def addNetworks(amount):
     for i, agent in enumerate(neuralNetworks):
         for j in range(amount):
             newNet = NeuralNetwork()
-            newNet.init(agent.layers, agent.biases, 0.1, 0.9, 1) #Change apropriately
+            newNet.init(agent.layers, agent.biases, MUTATION_RATE, 0.9, 1) #Change apropriately
             neuralNetworks.append(newNet)
             # results.append(MAX_POSITION) #Initialize position
             results.append([])
@@ -130,7 +138,7 @@ def addNetworks(amount):
     environments = []
     for i in range(len(neuralNetworks)):
         env = Environment()
-        env.init(DRAW_ENV)
+        env.init(DRAW_ENV, PREVIOUS_STATES)
         environments.append(env)
     
 
@@ -150,21 +158,15 @@ def run(steps, totalIterations = 0, thisIteration = 0):
     for _ in range(steps):
         for i in range(AMOUNT_OF_ENVIRONMENTS):
             env = environments[i]
-
-            env.steps[4][0] = env.steps[2][0]
-            env.steps[5][0] = env.steps[3][0]
-
-            env.steps[2][0] = env.steps[0][0]
-            env.steps[3][0] = env.steps[1][0]
             
             # calc dist, dir, angle, newAngle etc.
             # dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
             dist = env.realDistFromSide()
             angle = normalizeAngle(env.plane.angle)
 
-            env.steps[0][0] = angle
-            env.steps[1][0] = dist
-
+            env.steps = np.append(env.steps, [[angle],[dist]], axis=0)
+            env.steps = env.steps[2:]
+            # print(env.steps)
             
             # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
             possibleMoves = neuralNetworks[i].calcOutput(env.steps)
@@ -196,13 +198,11 @@ if __name__ == "__main__":
 
     values = np.fromstring(sys.argv[1], dtype=int, sep=',')
 
-    AMOUNT_HIDDEN_LAYERS = values[0]
-    NEURONS_HIDDENLAYER = values[1]
+    INTERATIONS = values[0]
+    MAX_STEPS = values[1]
     PREVIOUS_STATES = values[2]
-    MAX_STEPS = values[3]
-    ANGLE_SPEED = values[4]/100
-    INTERATIONS = values[5]
-    MAL_PLACERING = values[6]/100
+    AMOUNT_OF_ENVIRONMENTS = values[3]
+    MUTATION_RATE = values[4]/100
 
     
 

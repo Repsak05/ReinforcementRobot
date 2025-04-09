@@ -20,6 +20,11 @@ layers = []
 biases = []
 loadNetwork(PATH_NAME, 3, layers, biases)
 
+PREVIOUS_STATES = int(len(layers[0][0])/2)
+steps = np.array([[math.pi],[1]])
+
+for _ in range(PREVIOUS_STATES - 1):
+    steps = np.append(steps, [[math.pi],[1]], axis=0)
 
 network = NeuralNetwork()
 network.init(layers, biases, 0, 0, 0)
@@ -34,11 +39,11 @@ writeToArduino(math.degrees(angle))
 
 distNorm = readSerial()
 
-step = np.array([
-    [normalizeAngle(math.pi/2)],[distNorm],
-    [normalizeAngle(math.pi/2)],[distNorm],
-    [normalizeAngle(math.pi/2)],[distNorm]
-    ])
+# step = np.array([
+#     [normalizeAngle(math.pi/2)],[distNorm],
+#     [normalizeAngle(math.pi/2)],[distNorm],
+#     [normalizeAngle(math.pi/2)],[distNorm]
+#     ])
 
 startTime = time.time()
 
@@ -53,16 +58,12 @@ UpdateNetwork = True
 
 i = 0
 while(1):
-    step[4][0] = step[2][0]
-    step[5][0] = step[3][0]
+    steps = np.append(steps, [[angle],[distNorm]], axis=0)
+    steps = steps[2:]
 
-    step[2][0] = step[0][0]
-    step[3][0] = step[1][0]
 
-    possibleMoves = network.calcOutput(step)
+    possibleMoves = network.calcOutput(steps)
 
-    step[0][0] = normalizeAngle(angle)
-    step[1][0] = distNorm
 
     distances.append(abs(0.5 - distNorm)*2)
 

@@ -2,9 +2,9 @@ import subprocess
 import serial #Pakken hedder pyserial
 
 
-COM = "COM6"
+COM = "COM9"
 BAUD = 115200
-SERIAL = serial.Serial(COM, BAUD, timeout=1)
+# SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
 initialValues = {
     "hiddenLayers" : 1, 
@@ -17,30 +17,30 @@ initialValues = {
     "start" : 0
 }
 
-def readSerial():
-    allInput = ''
-    typeName = ""
-    value = 0
+# def readSerial():
+#     allInput = ''
+#     typeName = ""
+#     value = 0
 
-    if(SERIAL.is_open):
+#     if(SERIAL.is_open):
         
-        while (allInput == ''):
-            allInput = SERIAL.readline().decode().strip()
-            both = allInput.split(":")
+#         while (allInput == ''):
+#             allInput = SERIAL.readline().decode().strip()
+#             both = allInput.split(":")
             
-            if(len(both) == 2):
-                    typeName = both[0]
-                    value = both[1]
+#             if(len(both) == 2):
+#                     typeName = both[0]
+#                     value = both[1]
                     
-                    initialValues[typeName] = value
+#                     initialValues[typeName] = value
     
-    print({"type" : typeName, "value" : value})
-    return {"type" : typeName, "value" : value}
+#     print({"type" : typeName, "value" : value})
+#     return {"type" : typeName, "value" : value}
 
 
 
-while initialValues["start"] == 0: 
-    readSerial()
+# while initialValues["start"] == 0: 
+#     readSerial()
     
 # Convert to correct format
 valuesStr = ""
@@ -48,7 +48,7 @@ for key in initialValues:
     valuesStr += f"{initialValues[key]},"
 valuesStr = valuesStr[:-1]
 
-print(valuesStr)
+print(f"\n\n\n{valuesStr}\n\n\n")
 
 train = subprocess.Popen(["python", "Train.py", valuesStr])
 runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])

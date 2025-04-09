@@ -2,7 +2,7 @@ import serial #Pakken hedder pyserial
 import math
 import numpy as np
 
-COM = "COM5"
+COM = "COM1"
 BAUD = 115200
 SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
@@ -33,7 +33,7 @@ def readSerial():
             # print("dist:",distance)
     
     # return int(distance)
-    return (int(distance)-30)/(240-30)
+    return (int(distance)-40)/(205-40)
 
 # def normalizeAngle(angle):
 #     return (angle - MIN_ANGLE) / (MAX_ANGLE - 0)  # -MIN_POSITION ??????????
