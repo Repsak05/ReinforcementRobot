@@ -97,6 +97,10 @@ def initialize():
         network.randInit(PREVIOUS_STATES * 2, 3, NEURONS_HIDDENLAYER, AMOUNT_HIDDEN_LAYERS)
         neuralNetworks.append(network)
     
+    for j, layer in enumerate(neuralNetworks[0].layers):
+        np.save(f"AIParams/Layers/Layer{j}", layer)
+    for j, bias in enumerate(neuralNetworks[0].biases):
+        np.save(f"AIParams/Biases/Bias{j}", bias)
         
 def removeNetworks(amount):
     global environments

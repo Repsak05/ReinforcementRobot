@@ -9,7 +9,7 @@ ANGLE_SPEED = 0.05
 MIN_ANGLE = math.pi - math.pi / 18
 MAX_ANGLE = math.pi + math.pi / 18
 
-RELOAD_TIME = 3
+RELOAD_TIME = 8
 PATH_NAME = "AIParams"
 
 global layers
@@ -18,18 +18,11 @@ global biases
 # # Load Netværk
 layers = []
 biases = []
+time.sleep(1)
 loadNetwork(PATH_NAME, 3, layers, biases)
 
 PREVIOUS_STATES = int(len(layers[0][0])/2)
-steps = np.array([[0.5],[1]])
 
-print(PREVIOUS_STATES)
-for _ in range(PREVIOUS_STATES - 1):
-    steps = np.append(steps, [[0.5],[1]], axis=0)
-
-network = NeuralNetwork()
-# network.init(layers, biases, 0, 0, 0)
-network.randInit(PREVIOUS_STATES*2,3,20,1)
 
 angle = math.pi/2
 
@@ -42,6 +35,15 @@ writeToArduino(math.degrees(angle))
 distNorm = readSerial()
 
 startTime = time.time()
+
+steps = np.array([[0.5],[distNorm]])
+
+for _ in range(PREVIOUS_STATES - 1):
+    steps = np.append(steps, [[0.5],[distNorm]], axis=0)
+
+network = NeuralNetwork()
+# network.init(layers, biases, 0, 0, 0)
+network.randInit(PREVIOUS_STATES*2,3,20,1)
 
 distances = []
 distancesMean = []
@@ -56,7 +58,7 @@ i = 0
 while(1):
     steps = np.append(steps, [[angle],[distNorm]], axis=0)
     steps = steps[2:]
-    # print("\nLENGTH:",len(steps))
+    # print("LENGTH:",len(steps))
     possibleMoves = network.calcOutput(steps)
 
     distances.append(abs(0.5 - distNorm)*2)
