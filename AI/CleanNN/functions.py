@@ -33,6 +33,7 @@ def readSerial():
             # print("dist:",distance)
     
     # return int(distance)
+    # print(distance, "            ", (int(distance)-40)/(205-40))
     return (int(distance)-40)/(205-40)
 
 # def normalizeAngle(angle):

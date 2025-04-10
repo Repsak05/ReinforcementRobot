@@ -9,7 +9,7 @@ ANGLE_SPEED = 0.05
 MIN_ANGLE = math.pi - math.pi / 18
 MAX_ANGLE = math.pi + math.pi / 18
 
-RELOAD_TIME = 8
+RELOAD_TIME = 6
 PATH_NAME = "AIParams"
 
 global layers
@@ -56,7 +56,7 @@ UpdateNetwork = True
 
 i = 0
 while(1):
-    steps = np.append(steps, [[angle],[distNorm]], axis=0)
+    steps = np.append(steps, [[normalizeAngle(angle)],[distNorm]], axis=0)
     steps = steps[2:]
     # print("LENGTH:",len(steps))
     possibleMoves = network.calcOutput(steps)

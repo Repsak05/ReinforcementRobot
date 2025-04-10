@@ -12,7 +12,7 @@ class Environment:
         self.MIN_POSITION = 10.5
         self.MAX_POSITION = 172.3
 
-        self.staticThreshold = 0.122
+        self.staticThreshold = 0.13
 
         self.center = (400, 465)
         

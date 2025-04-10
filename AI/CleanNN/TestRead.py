@@ -38,22 +38,17 @@ network.init(layers, biases, 0, 0, 0)
 print(network.biases)
 
 env = Environment()
-env.init(True)
+env.init(True, 3)
 
 while True:
-    env.steps[4][0] = env.steps[2][0]
-    env.steps[5][0] = env.steps[3][0]
-
-    env.steps[2][0] = env.steps[0][0]
-    env.steps[3][0] = env.steps[1][0]
     
     # calc dist, dir, angle, newAngle etc.
     # dist = realDistanceToCenter(env.ball.position[0], env.ball.position[1], CENTER_BOX[0], CENTER_BOX[1])
     dist = env.realDistFromSide()
     angle = normalizeAngle(env.plane.angle)
 
-    env.steps[0][0] = angle
-    env.steps[1][0] = dist
+    env.steps = np.append(env.steps, [[angle],[dist]], axis=0)
+    env.steps = env.steps[2:]
     print(abs(0.5 - dist)*2)
     
     # possibleMoves = neuralNetworks[i].calcOutput(np.matrix([[angle],[dist]]))
