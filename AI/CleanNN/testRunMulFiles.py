@@ -32,33 +32,78 @@ def readSerial():
                     print({"type" : typeName, "value" : value})
 
 
-
-while initialValues["Start"] == 0: 
-    # print(initialValues["start"])
-    readSerial()
+while(1):
+    global finished
+    finished = False
     
-# Convert to correct format
-valuesStr = ""
-for key in initialValues:
-    valuesStr += f"{initialValues[key]},"
-valuesStr = valuesStr[:-1]
+    while initialValues["Start"] == 0:
+        readSerial()
+    
+    initialValues["Start"] == 0
+    
+    # Convert values
+    valuesStr = ""
+    for key in initialValues:
+        valuesStr += f"{initialValues[key]},"
+    valuesStr = valuesStr[:-1]
+    
+    train = subprocess.Popen(["python", "Train.py", valuesStr])
+    runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])
+    
+    while(1):
+        readSerial()
+            
+        # stop = input()
+        if initialValues["Start"] == 1:
+            finished = True
+            
+        if train.poll() != None or finished:
+            train.terminate()
+            runnerUpdate.terminate()
+            break
 
-print(f"\n\n\n{valuesStr}\n\n\n")
+    if not finished:
+        runner = subprocess.Popen(["python", "RealAI.py"])
 
-train = subprocess.Popen(["python", "Train.py", valuesStr])
-runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])
+        while(1):
+            readSerial()
+            if initialValues["Start"] == 1:
+                finished = True
+                runner.terminate()
+                break
+                
+            stop = input()
+            if stop == "stop":
+                runner.terminate()
+                break
+    
 
-while(1):
-    # stop = input()
-    if train.poll() != None:
-        train.terminate()
-        runnerUpdate.terminate()
-        break
+# while initialValues["Start"] == 0: 
+#     # print(initialValues["start"])
+#     readSerial()
+    
+# # Convert to correct format
+# valuesStr = ""
+# for key in initialValues:
+#     valuesStr += f"{initialValues[key]},"
+# valuesStr = valuesStr[:-1]
 
-runner = subprocess.Popen(["python", "RealAI.py"])
+# print(f"\n\n\n{valuesStr}\n\n\n")
 
-while(1):
-    stop = input()
-    if stop == "stop":
-        runner.terminate()
-        break
+# train = subprocess.Popen(["python", "Train.py", valuesStr])
+# runnerUpdate = subprocess.Popen(["python", "RealAIUpdate.py"])
+
+# while(1):
+#     # stop = input()
+#     if train.poll() != None:
+#         train.terminate()
+#         runnerUpdate.terminate()
+#         break
+
+# runner = subprocess.Popen(["python", "RealAI.py"])
+
+# while(1):
+#     stop = input()
+#     if stop == "stop":
+#         runner.terminate()
+#         break

@@ -8,11 +8,13 @@ rgb_lcd lcd;
 #define MAX_SIM_TID A1      //Rotary
 #define INPUT_STADIER A2    //Rotary
 #define AI A3               //Rotary  
-//MUTATIONSRATE             //Encoder
+//MUTATIONSRATE             //Encoder turn
+//START GAME                //Encoder click
+
 Encoder myEnc(2, 3);
 int currentEncoderPosition = 1;
 const int START = 4;
-
+int HAS_STARTED = 0;
 
 //                  0              1              2                3                  4               5              
 String types[6] = {"Iterationer", "Max Sim Tid", "Input Stadier", "Parallelle AI's", "Mutationsrate", "Start" };
@@ -26,7 +28,7 @@ void setup(){
   pinMode(INPUT_STADIER, INPUT);
 
   lcd.begin(16, 2);
-  lcd.setRGB(200, 0, 0); //R
+  lcd.setRGB(0, 200, 0); //R
 }
 
 void writeOnLCD(String s, int val, int col, int row){
@@ -60,29 +62,51 @@ void updateValue(int index, int value){
 int updateEncoder(){
   int newVal = myEnc.read();
   int increment = 5;
-  currentEncoderPosition = min(int(round(abs(newVal) / 4.0) * increment), 100);
+  int MAX_VAL = 200;
+  currentEncoderPosition = max(1, min(int(round(abs(newVal / 4.0) * increment)) % MAX_VAL, MAX_VAL));
   return currentEncoderPosition;
 }
 
 void loop(){
-
-  int maxSimulationsTid = analogRead(MAX_SIM_TID);
+  
+  int maxSimulationsTid = 1023 - analogRead(MAX_SIM_TID);
   updateValue(1, convertBetweenPositions(maxSimulationsTid, 1, 30) * 10);
 
-  int inputStadier = analogRead(INPUT_STADIER);
+  int inputStadier = 1023 - analogRead(INPUT_STADIER);
   updateValue(2, convertBetweenPositions(inputStadier, 1, 10));
 
-  int parallelleAI = analogRead(AI);
+  int parallelleAI = 1023 - analogRead(AI);
   updateValue(3, convertBetweenPositions(parallelleAI, 1, 20) * 10);
 
-  int mutationsRate = analogRead(MUTATIONS_RATE);
-  updateValue(4, convertBetweenPositions(mutationsRate, 1, 100) * 2);
+  int mutationsRate = 1023 - analogRead(MUTATIONS_RATE);
+  updateValue(4, convertBetweenPositions(mutationsRate, 0, 50) * 2);
 
   // Encoder
   updateValue(0, updateEncoder());
   Serial.println(currentEncoderPosition);
 
-  updateValue(5, !digitalRead(START)); //Press encoder to start
+  int currentState = !digitalRead(START);
+  if(HAS_STARTED != currentState){
+    HAS_STARTED = currentState;
+    updateValue(5, HAS_STARTED); //Press encoder to start
+
+    if(HAS_STARTED){
+      lcd.setRGB(200, 0, 0); //G
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("AI IS TRANING");
+      delay(3000);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Wait till traning");
+      lcd.setCursor(0, 1);
+      lcd.print("is complete");
+      delay(3000);
+      lcd.setRGB(0, 200, 0); //R
+    }
+  }
+
   
 
   delay(10);
