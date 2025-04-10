@@ -5,23 +5,26 @@ import time
 
 COM = "COM5"
 BAUD = 115200
-s = serial.Serial(COM, BAUD, timeout=1)
+SERIAL = serial.Serial(COM, BAUD, timeout=1)
 
 def writeToArduino(position):
-	if(s.is_open):
-		s.write(bytes([position]))
+	if(SERIAL.is_open):
+		SERIAL.write(bytes([position]))
 
    
 def readSerial():
 	distance = 0
-	if(s.is_open):
-		distance = s.readline().decode().strip()
+	if(SERIAL.is_open):
+		distance = SERIAL.readline().decode().strip()
 		print(distance)
     
 	return distance
-   
+
 
 while(1):
 	angle = int(input())
+
+	# angle = int(100)
+
 	writeToArduino(angle)
 	distance = readSerial()

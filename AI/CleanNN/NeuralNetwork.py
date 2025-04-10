@@ -7,21 +7,22 @@ class NeuralNetwork:
         self.layers = [np.random.uniform(-0.5, 0.5, (hiddenLayerSize, inputSize))]
         self.biases = [np.zeros((hiddenLayerSize, 1))]
         
-        for i in range(amountHidLayers):
+        for _ in range(amountHidLayers):
             self.layers.append(np.random.uniform(-0.5, 0.5, (hiddenLayerSize,hiddenLayerSize)))
             self.biases.append(np.zeros((hiddenLayerSize,1)))
             
         self.biases.append(np.zeros((outputSize,1)))
         self.layers.append(np.random.uniform(-0.5, 0.5, (outputSize, hiddenLayerSize)))
 
-    def init(self, layers, biases, randThreshold, randChange):
+    def init(self, layers, biases, randThreshold, biasThreshold, randChange):
         self.layers = copy.deepcopy(layers)
         self.biases = copy.deepcopy(biases)
         
         for arr in self.biases:
             for bias in arr:
-                n = np.random.uniform(-randChange, randChange)
-                bias[0] = n
+                if(np.random.uniform(0, 1) < biasThreshold):
+                    n = np.random.uniform(-randChange, randChange)
+                    bias[0] = n
                 
         for iLayer in range(len(layers)):
             layer = self.layers[iLayer]
@@ -31,20 +32,16 @@ class NeuralNetwork:
                 
                 for iweight in range(len(x)):
                     weight = x[iweight]     
-                         
                     if(np.random.uniform(0, 1) < randThreshold):
-                        # print("hej")
-                        n = np.random.uniform(-.5, .5)
-                        self.layers[iLayer][ix][iweight] += n
-    
+                        n = np.random.uniform(-randChange, randChange)
+                        self.layers[iLayer][ix][iweight] = n
+
 
     def calcOutput(self, input):
         curValues = input
 
         for i, layer in enumerate(self.layers):
             preValues = self.biases[i] + layer @ curValues
-            # curValues = 1 / (1 + np.exp(-preValues)) #SIGMOID
-            
-            # curValues = np.maximum(0, preValues)  # ReLU activation
-            curValues = np.minimum(0.5, np.maximum(0, preValues))  # ReLU-0.5 activation
+            curValues = 1 / (1 + np.exp(-preValues))
+            # curValues = np.minimum(.5, np.maximum(0, preValues))  # ReLU-0.5 activation
         return curValues

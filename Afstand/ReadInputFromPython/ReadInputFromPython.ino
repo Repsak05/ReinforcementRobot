@@ -37,6 +37,8 @@ void setup() {
 
 
 void loop() {
+  
+  // myservo.write(80);
 
   int rx = 0;
   int dist = sensor.readRangeContinuousMillimeters();

@@ -6,15 +6,17 @@ import numpy as np
 
 class Environment:
     
-    def init(self, draw = False):
+    def init(self, draw, PREVIOUS_STATES):
         self.drawBool = draw
 
-        self.MIN_POSITION = 0
-        self.MAX_POSITION = 80
+        self.MIN_POSITION = 10.5
+        self.MAX_POSITION = 172.3
 
-        self.staticThreshold = 0
+        self.staticThreshold = 0.13
 
         self.center = (400, 465)
+        
+        self.centerDistToSide = math.sqrt((490 - self.center[0])**2 + (450 - self.center[1])**2)
         
         self.WIDTH = 800
         self.HEIGHT = 600
@@ -25,11 +27,22 @@ class Environment:
         self.space = pymunk.Space()
         self.space.gravity = (0, 981)
 
-        self.ball = self.addBall(12, 30, (340, 450), False)
-        # self.hej = self.addBall(12, 30, (400, 450), True)
+        # xStart = np.random.uniform(340, 460)
+        # startPos = (470, 450)
+        startPos = (330, 450)
+
+        self.ball = self.addBall(12, 30, startPos, False)
 
         self.plane = self.createRotatingUBox(self.center, 200, 200, 10)
         self.plane.angle = math.pi
+
+        startDist = self.realDistFromSide()
+        
+        self.steps = np.array([[0.5],[startDist]])
+        # self.steps = np.array([[math.pi],[startDist],[math.pi],[startDist],[math.pi],[startDist]])
+        for _ in range(PREVIOUS_STATES - 1):
+            self.steps = np.append(self.steps, [[0.5],[startDist]], axis=0)
+
         
         if self.drawBool:
             self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -37,12 +50,10 @@ class Environment:
             self.clock = pygame.time.Clock()
 
             self.drawOptions = pymunk.pygame_util.DrawOptions(self.window)
-        
-        
-   
+
     def run(self, action):
         
-        # self.tiltCheck()
+        self.tiltCheck()
 
         self.plane.angle += action
         self.plane.angle = min(self.plane.angle, (math.pi) + (math.pi / 18))
@@ -53,12 +64,19 @@ class Environment:
 
     def tiltCheck(self):
         tilt_offset = self.plane.angle - math.pi  # deviation from the "neutral" angle
-        if abs(tilt_offset) < self.static_threshold:
+        if abs(tilt_offset) < self.staticThreshold:
             v = self.ball.velocity
             floor_dir = pymunk.Vec2d(math.cos(self.plane.angle), math.sin(self.plane.angle))
             proj = v.dot(floor_dir)
             if abs(proj) < 5:
                 self.ball.velocity = v - proj * floor_dir
+
+    def realDistFromSide(self):
+        sidePos = (math.cos(self.plane.angle - math.pi) * self.centerDistToSide + 400, math.sin(self.plane.angle - math.pi) * self.centerDistToSide + 450)
+         
+        distancefromSide = math.sqrt((sidePos[0] - self.ball.position[0])**2 + (sidePos[1] - self.ball.position[1])**2)
+        # return distancefromSide
+        return self.normalizeDist(distancefromSide)
 
     def runDraw(self, action):
         self.run(action)
@@ -108,11 +126,21 @@ class Environment:
         self.space.add(body, floor_shape, left_shape, right_shape)
         return body
     
-    def realDistanceToCenter(self):
-        distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - (self.center[1] - 15)), 2))
+    def normalizeDist(self, value):
+        return (value - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION)
+        
+    def realDistanceToCenter(self, ballX, ballY, floorX, floorY):
+        distance = math.sqrt(pow((ballX - floorX), 2) + pow((ballY - floorY), 2))
+        nDist = self.normalizeDist(distance)
+        
+        if(nDist < 0 or nDist > 1): print("INVALID: ", nDist, " must be within bounds [0, 1]")
+        return nDist
+    
+    # def realDistanceToCenter(self):
+    #     distance = math.sqrt(pow((self.ball.position[0] - self.center[0]), 2) + pow((self.ball.position[1] - self.center[1]), 2))
 
-        normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
-        return normalDist
+    #     normalDist = (distance - self.MIN_POSITION) / (self.MAX_POSITION - self.MIN_POSITION) 
+    #     return normalDist
 
 
     def stop(self):

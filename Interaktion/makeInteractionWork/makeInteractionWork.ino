@@ -47,7 +47,7 @@ int getEncoderPosition(){
 }
 
 void loop(){
-  Serial.println(getEncoderPosition(););
+  Serial.println(getEncoderPosition());
 
   lcd.clear();
 
